@@ -1,0 +1,13 @@
+# Environment secrets
+.env
+.env.local
+.env.*.local
+
+# Dependencies & Build artifacts
+node_modules/
+dist/
+
+# OS / Editor cache
+.DS_Store
+Thumbs.db
+.vscode/

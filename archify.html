@@ -1,0 +1,683 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Archify — Web Request & Redis Cache-Aside Lifecycle</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --teal-50: #f0fdfa;
+            --teal-100: #ccfbf1;
+            --teal-200: #99f6e4;
+            --teal-500: #14b8a6;
+            --teal-600: #0d9488;
+            --teal-700: #0f766e;
+            --teal-800: #115e59;
+            --teal-900: #134e4a;
+            --sky-50: #f0f9ff;
+            --sky-500: #0ea5e9;
+            --sky-700: #0369a1;
+            --amber-500: #f59e0b;
+            --rose-500: #f43f5e;
+            --bg: #f8fafc;
+            --surface: #ffffff;
+            --border: #e2e8f0;
+            --text-main: #0f172a;
+            --text-muted: #64748b;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg);
+            color: var(--text-main);
+            line-height: 1.6;
+            padding: 2rem 1.5rem;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        /* Header */
+        header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 2rem;
+            padding-bottom: 1.25rem;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .logo-group {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .logo-badge {
+            background: linear-gradient(135deg, var(--teal-600), var(--sky-500));
+            color: white;
+            font-weight: 800;
+            padding: 0.4rem 0.75rem;
+            border-radius: 8px;
+            font-size: 1rem;
+            letter-spacing: 0.5px;
+        }
+
+        .title-group h1 {
+            font-size: 1.4rem;
+            font-weight: 700;
+            color: var(--teal-900);
+        }
+
+        .title-group p {
+            font-size: 0.88rem;
+            color: var(--text-muted);
+        }
+
+        .back-link {
+            font-size: 0.88rem;
+            color: var(--teal-700);
+            text-decoration: none;
+            font-weight: 600;
+            padding: 0.4rem 0.8rem;
+            background: var(--teal-50);
+            border: 1px solid var(--teal-200);
+            border-radius: 6px;
+            transition: all 0.2s;
+        }
+
+        .back-link:hover {
+            background: var(--teal-100);
+        }
+
+        /* Controls */
+        .controls-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 1.25rem 1.5rem;
+            margin-bottom: 2rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 1rem;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+        }
+
+        .control-btns {
+            display: flex;
+            gap: 0.75rem;
+        }
+
+        .btn {
+            font-family: inherit;
+            font-size: 0.88rem;
+            font-weight: 600;
+            padding: 0.55rem 1.1rem;
+            border-radius: 8px;
+            border: none;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+        }
+
+        .btn-primary {
+            background: var(--teal-600);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: var(--teal-700);
+            transform: translateY(-1px);
+        }
+
+        .btn-secondary {
+            background: var(--teal-50);
+            color: var(--teal-800);
+            border: 1px solid var(--teal-200);
+        }
+
+        .btn-secondary:hover {
+            background: var(--teal-100);
+        }
+
+        .status-badge {
+            font-size: 0.82rem;
+            font-weight: 600;
+            padding: 0.35rem 0.8rem;
+            border-radius: 20px;
+            background: var(--sky-50);
+            color: var(--sky-700);
+            border: 1px solid #bae6fd;
+        }
+
+        /* Visual Architecture Flow Canvas */
+        .diagram-canvas {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 2.5rem 1.5rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.03);
+            position: relative;
+            overflow-x: auto;
+        }
+
+        .nodes-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 1.5rem;
+            min-width: 860px;
+            position: relative;
+        }
+
+        .node-card {
+            background: #ffffff;
+            border: 2px solid var(--border);
+            border-radius: 12px;
+            padding: 1.25rem 1rem;
+            text-align: center;
+            position: relative;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+        }
+
+        .node-card.active-node {
+            border-color: var(--teal-500);
+            box-shadow: 0 0 0 4px rgba(20, 184, 166, 0.2);
+            transform: translateY(-4px);
+        }
+
+        .node-card.redis-miss {
+            border-color: var(--rose-500);
+            box-shadow: 0 0 0 4px rgba(244, 63, 94, 0.2);
+        }
+
+        .node-card.redis-fill {
+            border-color: var(--amber-500);
+            box-shadow: 0 0 0 4px rgba(245, 158, 11, 0.2);
+        }
+
+        .node-icon {
+            font-size: 2.2rem;
+            margin-bottom: 0.5rem;
+            display: inline-block;
+        }
+
+        .node-title {
+            font-size: 1rem;
+            font-weight: 700;
+            color: var(--text-main);
+            margin-bottom: 0.25rem;
+        }
+
+        .node-subtitle {
+            font-size: 0.76rem;
+            color: var(--text-muted);
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        .node-details {
+            margin-top: 0.75rem;
+            font-size: 0.78rem;
+            color: var(--text-muted);
+            background: var(--bg);
+            padding: 0.4rem;
+            border-radius: 6px;
+        }
+
+        /* Flow Arrows & Step Sequence */
+        .lifecycle-steps {
+            margin-top: 2.5rem;
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+        }
+
+        .step-item {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            padding: 0.85rem 1.2rem;
+            background: var(--bg);
+            border-left: 4px solid var(--border);
+            border-radius: 0 8px 8px 0;
+            transition: all 0.2s;
+        }
+
+        .step-item.highlighted {
+            background: var(--teal-50);
+            border-left-color: var(--teal-600);
+            box-shadow: 0 2px 8px rgba(13, 148, 136, 0.08);
+        }
+
+        .step-num {
+            font-weight: 800;
+            font-size: 0.9rem;
+            color: var(--teal-800);
+            min-width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            background: var(--teal-100);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .step-text {
+            font-size: 0.9rem;
+            font-weight: 500;
+            flex-grow: 1;
+        }
+
+        .step-action-tag {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.75rem;
+            padding: 0.25rem 0.5rem;
+            border-radius: 4px;
+            background: #e2e8f0;
+            color: #334155;
+            font-weight: 600;
+        }
+
+        .tag-http { background: #e0f2fe; color: #0369a1; }
+        .tag-cache-miss { background: #fee2e2; color: #b91c1c; }
+        .tag-sql { background: #dcfce7; color: #15803d; }
+        .tag-cache-fill { background: #fef3c7; color: #b45309; }
+
+        /* Real-Time Trace Log Panel */
+        .trace-card {
+            background: #0f172a;
+            color: #f8fafc;
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.85rem;
+        }
+
+        .trace-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid #334155;
+            padding-bottom: 0.75rem;
+            margin-bottom: 1rem;
+            font-size: 0.8rem;
+            color: #94a3b8;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .trace-log-body {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+            min-height: 140px;
+        }
+
+        .log-line {
+            line-height: 1.5;
+            animation: fadeIn 0.2s ease-in;
+        }
+
+        .log-ts { color: #64748b; }
+        .log-op { color: #38bdf8; font-weight: 600; }
+        .log-miss { color: #f43f5e; font-weight: 700; }
+        .log-sql { color: #4ade80; }
+        .log-fill { color: #fbbf24; }
+        .log-ok { color: #2dd4bf; }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(3px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Reference Architecture Notes */
+        .notes-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 1.5rem;
+            font-size: 0.9rem;
+            color: var(--text-main);
+        }
+
+        .notes-card h3 {
+            font-size: 1.05rem;
+            color: var(--teal-900);
+            margin-bottom: 0.75rem;
+        }
+
+        .notes-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 1.25rem;
+            margin-top: 1rem;
+        }
+
+        .note-box {
+            background: var(--bg);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 1rem;
+        }
+
+        .note-box strong {
+            display: block;
+            margin-bottom: 0.3rem;
+            color: var(--teal-800);
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="container">
+
+        <!-- Header -->
+        <header>
+            <div class="logo-group">
+                <span class="logo-badge">ARCHIFY</span>
+                <div class="title-group">
+                    <h1>Web Request: Cache-Aside Architecture</h1>
+                    <p>Browser ➔ API ➔ Redis (Cache Miss) ➔ PostgreSQL Query ➔ Cache Fill</p>
+                </div>
+            </div>
+            <a href="frontend/index.html" class="back-link">← Return to Hotel Portal</a>
+        </header>
+
+        <!-- Controls Card -->
+        <div class="controls-card">
+            <div class="control-btns">
+                <button type="button" class="btn btn-primary" id="btn-play-miss">
+                    ▶ Play Simulation: Cache Miss & Fill
+                </button>
+                <button type="button" class="btn btn-secondary" id="btn-play-hit">
+                    ⚡ Play Simulation: Cache Hit
+                </button>
+                <button type="button" class="btn btn-secondary" id="btn-reset">
+                    ↺ Reset
+                </button>
+            </div>
+            <div class="status-badge" id="sim-status">
+                Simulation Idle (Click "Play" to step through flow)
+            </div>
+        </div>
+
+        <!-- Interactive Diagram Canvas -->
+        <div class="diagram-canvas">
+            <div class="nodes-grid">
+                <!-- 1. Browser -->
+                <div class="node-card" id="node-browser">
+                    <span class="node-icon">🌐</span>
+                    <div class="node-title">Client Browser</div>
+                    <div class="node-subtitle">http://localhost:5173</div>
+                    <div class="node-details">User requests <code>GET /api/rooms</code></div>
+                </div>
+
+                <!-- 2. API Server -->
+                <div class="node-card" id="node-api">
+                    <span class="node-icon">⚡</span>
+                    <div class="node-title">Express API Gateway</div>
+                    <div class="node-subtitle">http://localhost:5000</div>
+                    <div class="node-details">Orchestrates Cache-Aside logic</div>
+                </div>
+
+                <!-- 3. Redis Cache -->
+                <div class="node-card" id="node-redis">
+                    <span class="node-icon">🔴</span>
+                    <div class="node-title">Redis Cache Store</div>
+                    <div class="node-subtitle">localhost:6379</div>
+                    <div class="node-details">In-memory key/value index</div>
+                </div>
+
+                <!-- 4. PostgreSQL Database -->
+                <div class="node-card" id="node-postgres">
+                    <span class="node-icon">🐘</span>
+                    <div class="node-title">PostgreSQL Database</div>
+                    <div class="node-subtitle">localhost:5432 / hms_db</div>
+                    <div class="node-details">Relational ACID persistence</div>
+                </div>
+            </div>
+
+            <!-- Step Sequence Lifecycle -->
+            <div class="lifecycle-steps">
+                <div class="step-item" id="step-1">
+                    <span class="step-num">1</span>
+                    <span class="step-text"><strong>Browser calls API:</strong> Client dispatches <code>GET /api/rooms?hotelName=Grand Horizon Hotel</code> over HTTP.</span>
+                    <span class="step-action-tag tag-http">HTTP REQ</span>
+                </div>
+
+                <div class="step-item" id="step-2">
+                    <span class="step-num">2</span>
+                    <span class="step-text"><strong>API checks Redis:</strong> Express sends <code>GET hms:rooms:grand_horizon</code> to the Redis instance.</span>
+                    <span class="step-action-tag tag-http">CACHE CHECK</span>
+                </div>
+
+                <div class="step-item" id="step-3">
+                    <span class="step-num">3</span>
+                    <span class="step-text"><strong>Cache Miss:</strong> Redis reports key does not exist (returns <code>nil</code> / miss).</span>
+                    <span class="step-action-tag tag-cache-miss">CACHE MISS</span>
+                </div>
+
+                <div class="step-item" id="step-4">
+                    <span class="step-num">4</span>
+                    <span class="step-text"><strong>Query PostgreSQL:</strong> API executes SQL query against database: <code>SELECT * FROM rooms WHERE hotel_name = $1</code>.</span>
+                    <span class="step-action-tag tag-sql">SQL QUERY</span>
+                </div>
+
+                <div class="step-item" id="step-5">
+                    <span class="step-num">5</span>
+                    <span class="step-text"><strong>Database Returns Rows:</strong> PostgreSQL reads disks/buffers and returns active rooms result set to API.</span>
+                    <span class="step-action-tag tag-sql">SQL RESULT</span>
+                </div>
+
+                <div class="step-item" id="step-6">
+                    <span class="step-num">6</span>
+                    <span class="step-text"><strong>Fills Redis Cache:</strong> API writes record back to Redis with TTL: <code>SETEX hms:rooms:grand_horizon 300 &lt;json&gt;</code>.</span>
+                    <span class="step-action-tag tag-cache-fill">CACHE FILL</span>
+                </div>
+
+                <div class="step-item" id="step-7">
+                    <span class="step-num">7</span>
+                    <span class="step-text"><strong>Response to Browser:</strong> API responds with HTTP 200 JSON payload, tagged with <code>X-Cache: MISS</code>.</span>
+                    <span class="step-action-tag tag-http">HTTP 200 OK</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Real-Time Trace Log Panel -->
+        <div class="trace-card">
+            <div class="trace-header">
+                <span>📡 Live Execution Telemetry & Packet Trace</span>
+                <span id="trace-latency">Latency: 0ms</span>
+            </div>
+            <div class="trace-log-body" id="trace-log">
+                <div class="log-line"><span class="log-ts">[00:00:00]</span> Standby. Click "Play Simulation: Cache Miss & Fill" above to trace request path.</div>
+            </div>
+        </div>
+
+        <!-- Reference Architecture Notes -->
+        <div class="notes-card">
+            <h3>Architecture Patterns & Key Benefits</h3>
+            <div class="notes-grid">
+                <div class="note-box">
+                    <strong>1. Cache-Aside (Lazy Loading)</strong>
+                    Application code first queries the cache. If data is missing (miss), application reads from PostgreSQL and populates the cache for subsequent readers.
+                </div>
+                <div class="note-box">
+                    <strong>2. Database Load Reduction</strong>
+                    Subsequent calls bypass PostgreSQL completely, reducing query pressure on PostgreSQL connection pool (`pg.Pool`) by over 90%.
+                </div>
+                <div class="note-box">
+                    <strong>3. Multi-Tenant Cache Keying</strong>
+                    Cache keys include hotel names (e.g. `hms:rooms:{hotel_name}`) ensuring total data isolation between different hotel staff administrator accounts.
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Interactive Simulation Script -->
+    <script>
+        const btnPlayMiss = document.getElementById('btn-play-miss');
+        const btnPlayHit = document.getElementById('btn-play-hit');
+        const btnReset = document.getElementById('btn-reset');
+        const simStatus = document.getElementById('sim-status');
+        const traceLog = document.getElementById('trace-log');
+        const traceLatency = document.getElementById('trace-latency');
+
+        const nodes = {
+            browser: document.getElementById('node-browser'),
+            api: document.getElementById('node-api'),
+            redis: document.getElementById('node-redis'),
+            postgres: document.getElementById('node-postgres')
+        };
+
+        const steps = [
+            document.getElementById('step-1'),
+            document.getElementById('step-2'),
+            document.getElementById('step-3'),
+            document.getElementById('step-4'),
+            document.getElementById('step-5'),
+            document.getElementById('step-6'),
+            document.getElementById('step-7')
+        ];
+
+        function clearHighlights() {
+            Object.values(nodes).forEach(n => {
+                n.className = 'node-card';
+            });
+            steps.forEach(s => s.classList.remove('highlighted'));
+        }
+
+        function appendLog(line) {
+            const d = new Date();
+            const ts = d.toTimeString().split(' ')[0] + '.' + String(d.getMilliseconds()).padStart(3, '0');
+            const div = document.createElement('div');
+            div.className = 'log-line';
+            div.innerHTML = `<span class="log-ts">[${ts}]</span> ${line}`;
+            traceLog.appendChild(div);
+            traceLog.scrollTop = traceLog.scrollHeight;
+        }
+
+        const sleep = ms => new Promise(res => setTimeout(res, ms));
+
+        // 1. Full Simulation: Cache Miss & Fill Flow
+        async function runCacheMissFlow() {
+            btnPlayMiss.disabled = true;
+            btnPlayHit.disabled = true;
+            traceLog.innerHTML = '';
+            clearHighlights();
+
+            simStatus.textContent = '🚀 Step 1: Browser initiates HTTP GET request...';
+            nodes.browser.classList.add('active-node');
+            steps[0].classList.add('highlighted');
+            appendLog('<span class="log-op">HTTP REQ</span> GET /api/rooms?hotelName=Grand Horizon Hotel (Client ➔ API)');
+            await sleep(700);
+
+            simStatus.textContent = '🔍 Step 2: API inspecting Redis cache...';
+            nodes.browser.classList.remove('active-node');
+            nodes.api.classList.add('active-node');
+            nodes.redis.classList.add('active-node');
+            steps[1].classList.add('highlighted');
+            appendLog('<span class="log-op">REDIS CMD</span> GET hms:rooms:grand_horizon');
+            await sleep(700);
+
+            simStatus.textContent = '❌ Step 3: Cache Miss detected! Key not in Redis.';
+            nodes.redis.classList.add('redis-miss');
+            steps[2].classList.add('highlighted');
+            appendLog('<span class="log-miss">CACHE MISS</span> Redis returned (nil) [4ms]');
+            await sleep(800);
+
+            simStatus.textContent = '🐘 Step 4: API queries primary storage (PostgreSQL)...';
+            nodes.redis.classList.remove('active-node', 'redis-miss');
+            nodes.postgres.classList.add('active-node');
+            steps[3].classList.add('highlighted');
+            appendLog('<span class="log-sql">SQL EXEC</span> SELECT * FROM rooms WHERE LOWER(hotel_name) = $1 ORDER BY price ASC');
+            await sleep(700);
+
+            simStatus.textContent = '📦 Step 5: PostgreSQL returns rows to API...';
+            steps[4].classList.add('highlighted');
+            appendLog('<span class="log-sql">SQL RESULT</span> 5 rows returned from table `rooms` [12ms]');
+            await sleep(700);
+
+            simStatus.textContent = '💾 Step 6: API fills Redis cache with result (TTL 300s)...';
+            nodes.postgres.classList.remove('active-node');
+            nodes.redis.classList.add('redis-fill');
+            steps[5].classList.add('highlighted');
+            appendLog('<span class="log-fill">CACHE FILL</span> SETEX hms:rooms:grand_horizon 300 [Payload: 1.8 KB]');
+            await sleep(800);
+
+            simStatus.textContent = '✅ Step 7: API returns JSON response to Browser (X-Cache: MISS)';
+            nodes.redis.classList.remove('redis-fill');
+            nodes.api.classList.add('active-node');
+            nodes.browser.classList.add('active-node');
+            steps[6].classList.add('highlighted');
+            appendLog('<span class="log-ok">HTTP 200 OK</span> Headers: X-Cache: MISS | Content-Type: application/json [Total: 24ms]');
+            traceLatency.textContent = 'Latency: 24ms (Cache Miss)';
+            simStatus.textContent = '🎉 Complete! Cache successfully filled in Redis.';
+
+            btnPlayMiss.disabled = false;
+            btnPlayHit.disabled = false;
+        }
+
+        // 2. Simulation: Cache Hit Flow (Demonstrating the benefit)
+        async function runCacheHitFlow() {
+            btnPlayMiss.disabled = true;
+            btnPlayHit.disabled = true;
+            traceLog.innerHTML = '';
+            clearHighlights();
+
+            simStatus.textContent = '⚡ Cache Hit Flow: Browser requests data...';
+            nodes.browser.classList.add('active-node');
+            appendLog('<span class="log-op">HTTP REQ</span> GET /api/rooms?hotelName=Grand Horizon Hotel (Client ➔ API)');
+            await sleep(600);
+
+            simStatus.textContent = '🎯 API checks Redis: HIT!';
+            nodes.browser.classList.remove('active-node');
+            nodes.api.classList.add('active-node');
+            nodes.redis.classList.add('active-node');
+            appendLog('<span class="log-op">REDIS CMD</span> GET hms:rooms:grand_horizon');
+            await sleep(500);
+
+            appendLog('<span class="log-ok">CACHE HIT</span> Key found in RAM! Returning cached JSON directly [1ms]');
+            appendLog('<span class="log-ok">HTTP 200 OK</span> Headers: X-Cache: HIT | Total Latency: 2ms (PostgreSQL bypassed!)');
+            traceLatency.textContent = 'Latency: 2ms (Cache Hit)';
+            simStatus.textContent = '⚡ Complete! Served instantly from Redis in 2ms without querying PostgreSQL.';
+
+            await sleep(800);
+            nodes.browser.classList.add('active-node');
+            btnPlayMiss.disabled = false;
+            btnPlayHit.disabled = false;
+        }
+
+        btnPlayMiss.addEventListener('click', runCacheMissFlow);
+        btnPlayHit.addEventListener('click', runCacheHitFlow);
+        btnReset.addEventListener('click', () => {
+            clearHighlights();
+            traceLog.innerHTML = '<div class="log-line"><span class="log-ts">[00:00:00]</span> Reset complete. Ready for new trace.</div>';
+            traceLatency.textContent = 'Latency: 0ms';
+            simStatus.textContent = 'Simulation Idle (Click "Play" to step through flow)';
+        });
+    </script>
+
+</body>
+
+</html>

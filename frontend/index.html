@@ -1,0 +1,516 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Grand Horizon Hotel | All-in-One Hospitality Portal</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+
+<body>
+
+    <!-- Unified Header Navigation -->
+    <header>
+        <nav class="navbar">
+            <div class="logo">
+                <a href="#home" onclick="showView('home')">
+                    <span class="logo-badge">GH</span>
+                    Grand Horizon
+                </a>
+                <span class="server-status-pill" id="db-status-pill" title="Connected to laptop PostgreSQL">
+                    <span class="status-dot"></span> PostgreSQL Active
+                </span>
+            </div>
+
+            <ul class="nav-links">
+                <li><button type="button" class="nav-tab-btn active-tab" id="tab-home" onclick="showView('home')">Home</button></li>
+                <li><button type="button" class="nav-tab-btn" id="tab-rooms" onclick="showView('rooms')">Rooms & Suites</button></li>
+                <li><button type="button" class="nav-tab-btn" id="tab-customer" onclick="showView('customer')">Guest Portal</button></li>
+                <li><button type="button" class="nav-tab-btn" id="tab-admin" onclick="showView('admin')">Staff Console</button></li>
+            </ul>
+
+            <div class="user-controls" id="header-user-controls">
+                <button type="button" class="btn-secondary" id="tab-login" onclick="showView('login')">Sign In</button>
+                <button type="button" class="btn-primary" id="tab-register" onclick="showView('register')">Register</button>
+            </div>
+        </nav>
+    </header>
+
+    <main>
+
+        <!-- ===============================================================
+             VIEW 1: HOME PAGE
+             =============================================================== -->
+        <section id="view-home" class="spa-view active-view">
+            <!-- Hero Banner -->
+            <div class="hero">
+                <div class="hero-container">
+                    <div class="hero-content">
+                        <div class="hero-pill">🌿 Serene Coastal Hospitality</div>
+                        <h1>Tranquil Luxury, <span>Effortless Comfort</span></h1>
+                        <p>
+                            Experience coastal architecture, curated guest amenities, and personalized hospitality at Grand Horizon. All reservations synchronized with your laptop's PostgreSQL database.
+                        </p>
+                        <div class="hero-actions">
+                            <button type="button" class="btn-primary" style="padding: 0.8rem 1.6rem; font-size: 1rem;" onclick="showView('rooms')">
+                                Explore Rooms
+                            </button>
+                            <button type="button" class="btn-secondary" style="padding: 0.8rem 1.4rem;" onclick="showView('login')">
+                                Demo Accounts
+                            </button>
+                        </div>
+                    </div>
+                    <div class="hero-media">
+                        <img 
+                            src="https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?auto=format&fit=crop&w=1000&q=80" 
+                            alt="Luxury Hotel Suite" 
+                            class="hero-banner-image"
+                        />
+                    </div>
+                </div>
+            </div>
+
+            <!-- Features Grid -->
+            <div class="features-section">
+                <div class="features-grid">
+                    <div class="feature-card">
+                        <div class="feature-icon-box">🛎️</div>
+                        <h3>24/7 Concierge</h3>
+                        <p>Personalized guest services, private dining reservations, and express check-in/out.</p>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-icon-box">🌊</div>
+                        <h3>Oceanfront Horizons</h3>
+                        <p>Panoramic views across pristine waters with private balconies in every luxury suite.</p>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-icon-box">⚡</div>
+                        <h3>PostgreSQL Powered</h3>
+                        <p>Real-time booking and inventory management backed directly by local database <code>hms_db</code>.</p>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-icon-box">🔑</div>
+                        <h3>Instant Demo Access</h3>
+                        <p>One-click testing with pre-seeded Administrator and Customer profiles without typing.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Featured Rooms Quick Showcase -->
+            <div class="container-clean" style="padding-top: 0;">
+                <div class="catalog-header">
+                    <div class="catalog-title">
+                        <h2>Featured Accommodations</h2>
+                        <p>Hand-picked suites offering light blue-green serene aesthetics and comfort</p>
+                    </div>
+                    <button type="button" class="btn-outline" onclick="showView('rooms')">View All Rooms →</button>
+                </div>
+                <div class="rooms-grid-clean" id="home-featured-rooms"></div>
+            </div>
+        </section>
+
+        <!-- ===============================================================
+             VIEW 2: ROOMS & SUITES DIRECTORY
+             =============================================================== -->
+        <section id="view-rooms" class="spa-view">
+            <div class="container-clean">
+                <div class="catalog-header">
+                    <div class="catalog-title">
+                        <h2>Accommodations Directory</h2>
+                        <p>Explore luxury suites and filter by category or availability</p>
+                    </div>
+                </div>
+
+                <!-- Filter Controls -->
+                <div class="filter-bar-clean">
+                    <div class="filter-field">
+                        <label for="filter-type">Room Category</label>
+                        <select id="filter-type">
+                            <option value="all">All Categories</option>
+                            <option value="Standard">Standard</option>
+                            <option value="Deluxe">Deluxe</option>
+                            <option value="Suite">Suite</option>
+                        </select>
+                    </div>
+
+                    <div class="filter-field">
+                        <label for="filter-status">Availability</label>
+                        <select id="filter-status">
+                            <option value="">All Statuses</option>
+                            <option value="available" selected>Available Only</option>
+                            <option value="maintenance">Maintenance</option>
+                        </select>
+                    </div>
+
+                    <button type="button" id="btn-reset-filters" class="btn-secondary" style="height: 42px;">
+                        Reset Filters
+                    </button>
+                </div>
+
+                <!-- Grid -->
+                <div id="catalog-rooms-grid" class="rooms-grid-clean"></div>
+            </div>
+        </section>
+
+        <!-- ===============================================================
+             VIEW 3: SIGN IN (WITH 1-CLICK DEMO ACCOUNTS)
+             =============================================================== -->
+        <section id="view-login" class="spa-view">
+            <div class="auth-page-container">
+                <div class="auth-card-clean">
+                    <div class="auth-header-clean">
+                        <h2>Welcome Back</h2>
+                        <p>Sign in to your account or pick an instant demo profile</p>
+                    </div>
+
+                    <!-- 1-Click Demo Accounts -->
+                    <div class="demo-box-clean">
+                        <div class="demo-box-header">
+                            <span class="demo-box-title">⚡ Instant Demo Accounts</span>
+                            <span class="demo-chip">Click to fill</span>
+                        </div>
+                        <div class="demo-grid-cards">
+                            <button type="button" class="demo-account-btn" id="demo-admin-btn">
+                                <span class="demo-account-role">👑 Staff / Admin</span>
+                                <span class="demo-account-email">admin@horizon.com</span>
+                                <span class="demo-account-tip">Pass: admin123</span>
+                            </button>
+                            <button type="button" class="demo-account-btn" id="demo-customer-btn">
+                                <span class="demo-account-role">🧳 Customer</span>
+                                <span class="demo-account-email">customer@horizon.com</span>
+                                <span class="demo-account-tip">Pass: guest123</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div id="login-alert" class="alert-clean hidden" role="alert"></div>
+
+                    <!-- Standard Form -->
+                    <form id="spa-login-form">
+                        <div class="form-group-clean">
+                            <label for="login-email">Email Address</label>
+                            <input type="email" id="login-email" required placeholder="admin@horizon.com" autocomplete="email">
+                        </div>
+
+                        <div class="form-group-clean">
+                            <label for="login-password">Password</label>
+                            <input type="password" id="login-password" required placeholder="••••••••" autocomplete="current-password">
+                        </div>
+
+                        <button type="submit" class="btn-primary" style="width: 100%; padding: 0.75rem; font-size: 0.95rem;">
+                            Sign In to Portal
+                        </button>
+                    </form>
+
+                    <div class="form-footer-clean">
+                        Don't have an account? <a href="#register" onclick="showView('register')">Create a free account</a>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ===============================================================
+             VIEW 4: REGISTER (WITH 1-CLICK DEMO AUTOFILL)
+             =============================================================== -->
+        <section id="view-register" class="spa-view">
+            <div class="auth-page-container">
+                <div class="auth-card-clean">
+                    <div class="auth-header-clean">
+                        <h2>Create Account</h2>
+                        <p>Register as a guest or hotel staff administrator</p>
+                    </div>
+
+                    <!-- Demo Helper -->
+                    <div class="demo-box-clean">
+                        <div class="demo-box-header">
+                            <span class="demo-box-title">⚡ Quick Demo Registration</span>
+                            <button type="button" id="fill-demo-register-btn" class="demo-chip" style="cursor: pointer; border: none;">
+                                Auto-Fill Sample
+                            </button>
+                        </div>
+                        <p style="font-size: 0.8rem; color: var(--text-muted); margin: 0;">
+                            Click above to prefill realistic test values with a single click.
+                        </p>
+                    </div>
+
+                    <div id="register-alert" class="alert-clean hidden" role="alert"></div>
+
+                    <!-- Form -->
+                    <form id="spa-register-form">
+                        <div class="form-group-clean">
+                            <label for="reg-name">Full Name</label>
+                            <input type="text" id="reg-name" required placeholder="e.g. Rahul Verma" autocomplete="name">
+                        </div>
+
+                        <div class="form-group-clean">
+                            <label for="reg-email">Email Address</label>
+                            <input type="email" id="reg-email" required placeholder="rahul@example.com" autocomplete="email">
+                        </div>
+
+                        <div class="form-group-clean">
+                            <label for="reg-password">Password (Min. 6 characters)</label>
+                            <input type="password" id="reg-password" minlength="6" required placeholder="••••••••" autocomplete="new-password">
+                        </div>
+
+                        <div class="form-group-clean">
+                            <label for="reg-role">Account Type</label>
+                            <select id="reg-role" required>
+                                <option value="customer" selected>Customer / Guest</option>
+                                <option value="admin">Hotel Staff / Administrator</option>
+                            </select>
+                        </div>
+
+                        <!-- Hotel Name Section (Isolated for Staff/Administrator) -->
+                        <div class="form-group-clean hidden" id="reg-hotel-group">
+                            <label for="reg-hotel-name">Hotel / Property Name</label>
+                            <input type="text" id="reg-hotel-name" placeholder="e.g. Seaside Pearl Resort" autocomplete="organization">
+                            <small style="color: var(--teal-700); font-size: 0.8rem; display: block; margin-top: 0.3rem;">
+                                🏨 Each hotel administrator's rooms, bookings, and revenue are strictly isolated.
+                            </small>
+                        </div>
+
+                        <button type="submit" class="btn-primary" style="width: 100%; padding: 0.75rem; font-size: 0.95rem;">
+                            Complete Registration
+                        </button>
+                    </form>
+
+                    <div class="form-footer-clean">
+                        Already registered? <a href="#login" onclick="showView('login')">Sign in here</a>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ===============================================================
+             VIEW 5: GUEST PORTAL
+             =============================================================== -->
+        <section id="view-customer" class="spa-view">
+            <div class="container-clean">
+                <div class="dashboard-banner-clean">
+                    <div class="dashboard-banner-text">
+                        <h1 id="customer-banner-welcome">Guest Reservations Portal</h1>
+                        <p>Manage your reservations, check availability, and explore luxury suites</p>
+                    </div>
+                    <div>
+                        <button type="button" class="btn-primary" style="background: #ffffff; color: var(--teal-800); font-weight: 700;" onclick="showView('rooms')">
+                            + Book New Room
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Book a Stay Section -->
+                <div class="card-section-clean">
+                    <div class="card-section-header">
+                        <h2>Check Availability & Book Instantly</h2>
+                    </div>
+
+                    <form id="customer-search-form" class="filter-bar-clean" style="margin-bottom: 1.5rem;">
+                        <div class="filter-field">
+                            <label for="cust-checkin">Check-In Date</label>
+                            <input type="date" id="cust-checkin" required>
+                        </div>
+
+                        <div class="filter-field">
+                            <label for="cust-checkout">Check-Out Date</label>
+                            <input type="date" id="cust-checkout" required>
+                        </div>
+
+                        <div class="filter-field">
+                            <label for="cust-category">Room Category</label>
+                            <select id="cust-category">
+                                <option value="all">All Categories</option>
+                                <option value="Standard">Standard</option>
+                                <option value="Deluxe">Deluxe</option>
+                                <option value="Suite">Suite</option>
+                            </select>
+                        </div>
+
+                        <button type="submit" class="btn-primary" style="height: 42px;">
+                            Search Rooms
+                        </button>
+                    </form>
+
+                    <div id="customer-available-grid" class="rooms-grid-clean"></div>
+                </div>
+
+                <!-- Reservations Table -->
+                <div class="card-section-clean">
+                    <div class="card-section-header">
+                        <h2>My Reservations History</h2>
+                    </div>
+
+                    <div class="table-responsive-clean">
+                        <table class="table-clean">
+                            <thead>
+                                <tr>
+                                    <th>Booking ID</th>
+                                    <th>Room Details</th>
+                                    <th>Check-In</th>
+                                    <th>Check-Out</th>
+                                    <th>Total Amount</th>
+                                    <th>Status</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody id="customer-bookings-body"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ===============================================================
+             VIEW 6: STAFF OPERATIONS CONSOLE
+             =============================================================== -->
+        <section id="view-admin" class="spa-view">
+            <div class="container-clean">
+                <div class="dashboard-banner-clean" style="background: linear-gradient(135deg, var(--teal-700), var(--sky-700));">
+                    <div class="dashboard-banner-text">
+                        <h1>Hospitality Command Center</h1>
+                        <p>Live synchronized with laptop PostgreSQL database (<strong>hms_db</strong>)</p>
+                    </div>
+                    <button type="button" id="btn-toggle-add-room-spa" class="btn-primary" style="background: #ffffff; color: var(--teal-800); font-weight: 700;">
+                        + Add New Room
+                    </button>
+                </div>
+
+                <!-- 4 KPI Metrics -->
+                <div class="kpi-row-clean">
+                    <div class="kpi-card-clean">
+                        <div class="kpi-card-title">Total Inventory</div>
+                        <div class="kpi-card-value" id="admin-total-rooms">--</div>
+                    </div>
+                    <div class="kpi-card-clean kpi-sky">
+                        <div class="kpi-card-title">Active Reservations</div>
+                        <div class="kpi-card-value" id="admin-active-bookings">--</div>
+                    </div>
+                    <div class="kpi-card-clean kpi-mint">
+                        <div class="kpi-card-title">Occupancy Rate</div>
+                        <div class="kpi-card-value" id="admin-occupancy-rate">--%</div>
+                    </div>
+                    <div class="kpi-card-clean">
+                        <div class="kpi-card-title">Net Ledger Revenue</div>
+                        <div class="kpi-card-value" id="admin-total-revenue">₹0</div>
+                    </div>
+                </div>
+
+                <!-- Room Management -->
+                <div class="card-section-clean">
+                    <div class="card-section-header">
+                        <h2>Accommodations Inventory</h2>
+                    </div>
+
+                    <!-- Add Room Inline Form -->
+                    <form id="admin-add-room-form" class="filter-bar-clean hidden" style="margin-bottom: 1.5rem; background: var(--teal-50); border: 1px solid var(--teal-200);">
+                        <div class="filter-field">
+                            <label for="adm-room-num">Room Number</label>
+                            <input type="text" id="adm-room-num" placeholder="e.g. 401" required>
+                        </div>
+                        <div class="filter-field">
+                            <label for="adm-room-type">Category</label>
+                            <select id="adm-room-type" required>
+                                <option value="Standard">Standard</option>
+                                <option value="Deluxe">Deluxe</option>
+                                <option value="Suite">Suite</option>
+                            </select>
+                        </div>
+                        <div class="filter-field">
+                            <label for="adm-room-price">Price / Night (₹)</label>
+                            <input type="number" id="adm-room-price" min="500" step="100" placeholder="3500" required>
+                        </div>
+                        <div class="filter-field">
+                            <label for="adm-room-cap">Capacity</label>
+                            <input type="number" id="adm-room-cap" min="1" max="10" placeholder="2" required>
+                        </div>
+                        <div class="filter-field">
+                            <label for="adm-room-img">Image URL</label>
+                            <input type="url" id="adm-room-img" placeholder="https://...">
+                        </div>
+                        <button type="submit" class="btn-primary" style="height: 42px;">Save Room</button>
+                    </form>
+
+                    <div class="table-responsive-clean">
+                        <table class="table-clean">
+                            <thead>
+                                <tr>
+                                    <th>Room No</th>
+                                    <th>Category</th>
+                                    <th>Nightly Rate</th>
+                                    <th>Capacity</th>
+                                    <th>Status</th>
+                                    <th>Inventory Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="admin-inventory-body"></tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Bookings Ledger -->
+                <div class="card-section-clean">
+                    <div class="card-section-header">
+                        <h2>Master Reservations Ledger</h2>
+                    </div>
+
+                    <div class="table-responsive-clean">
+                        <table class="table-clean">
+                            <thead>
+                                <tr>
+                                    <th>Booking ID</th>
+                                    <th>Guest Name</th>
+                                    <th>Room</th>
+                                    <th>Stay Dates</th>
+                                    <th>Amount</th>
+                                    <th>Status</th>
+                                    <th>Manage Status</th>
+                                </tr>
+                            </thead>
+                            <tbody id="admin-ledger-body"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Global Reservation Confirmation Dialog Modal -->
+    <dialog id="spa-booking-modal" class="modal-clean">
+        <div class="modal-box-clean">
+            <h3>Reserve Your Stay</h3>
+            <div id="spa-modal-summary" class="modal-summary-card"></div>
+
+            <form id="spa-modal-booking-form">
+                <div class="form-group-clean">
+                    <label for="spa-modal-checkin">Check-In Date</label>
+                    <input type="date" id="spa-modal-checkin" required>
+                </div>
+                <div class="form-group-clean">
+                    <label for="spa-modal-checkout">Check-Out Date</label>
+                    <input type="date" id="spa-modal-checkout" required>
+                </div>
+
+                <div class="modal-actions-clean">
+                    <button type="button" id="spa-modal-cancel" class="btn-secondary">Cancel</button>
+                    <button type="submit" id="spa-modal-submit" class="btn-primary">Confirm Reservation</button>
+                </div>
+            </form>
+        </div>
+    </dialog>
+
+    <footer>
+        <p>&copy; 2024 Grand Horizon Hotel & Resorts. Single Page Application in One HTML file connected to PostgreSQL.</p>
+        <p style="margin-top: 0.4rem; font-size: 0.8rem;">
+            <a href="../archify.html" target="_blank" style="color: var(--teal-700); font-weight: 600; text-decoration: underline;">
+                📐 Open Archify System Architecture Diagram
+            </a>
+        </p>
+    </footer>
+
+    <!-- Modular SPA Client Controller -->
+    <script type="module" src="js/app.js"></script>
+
+</body>
+
+</html>
