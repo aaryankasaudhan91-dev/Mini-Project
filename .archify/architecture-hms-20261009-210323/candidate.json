@@ -7,7 +7,7 @@
     "quality_profile": "showcase",
     "locale": "en",
     "repository": {
-      "url": "file:///C:/Users/rajku/Documents/Codex/2026-10-09/d-devanshi-project-21-hms-models/work/archify-source",
+      "url": "https://github.com/aaryankasaudhan91-dev/Mini-Project.git",
       "revision": "718fc1d632f7c80689a8c22761df7a7e27f597f8",
       "link_mode": "local-only"
     }
@@ -160,7 +160,7 @@
         {
           "path": "backend/db.js",
           "line": 1,
-          "end_line": 24
+          "end_line": 23
         },
         {
           "path": "backend/database/schema.sql",

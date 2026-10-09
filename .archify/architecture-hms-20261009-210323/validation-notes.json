@@ -1,0 +1,13 @@
+{
+  "diagramType": "architecture",
+  "publication": "Archify template fallback; ordinary file write",
+  "candidateSha256": "bae0843ea690f646eebdb469f2191bcac03a0abada8327e6546385f5f25682a3",
+  "artifactSha256": "78db44250c4786c1e871a2329997093c5af288ca9d223af6aa02390b5d375b64",
+  "sourceRevision": "718fc1d632f7c80689a8c22761df7a7e27f597f8",
+  "staticArtifactChecks": "9/9 passed; no errors or warnings",
+  "sourceEvidence": "verified against a local snapshot of modified sources",
+  "finalize": "blocked: EPERM when creating hard links for receipts",
+  "browserCheck": "blocked: Chrome Crashpad/DevTools pipe failure",
+  "visualReview": "not completed: in-app browser failed to attach",
+  "deliveryProvenance": "unknown; no official passing delivery receipt"
+}
