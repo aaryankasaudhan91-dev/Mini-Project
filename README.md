@@ -1,4 +1,4 @@
-# ?? Grand Horizon � Hotel Management System
+﻿# Grand Horizon -- Hotel Management System
 
 A full-stack, multi-tenant Hotel Management System (HMS) with JWT authentication, date-aware room availability, and atomic booking protection against double-bookings.
 
@@ -6,24 +6,24 @@ A full-stack, multi-tenant Hotel Management System (HMS) with JWT authentication
 
 ## Features
 
-- **Multi-Tenant Architecture** � Each admin manages only their own hotel's rooms and bookings; data is strictly isolated by `admin_id`.
-- **JWT Auth** � Scrypt-hashed passwords, JWT tokens, role-based access (`admin` / `customer`).
-- **Date-Aware Availability** � Room status is computed in real time from active bookings for a given check-in/check-out range.
-- **Atomic Booking Transactions** � PostgreSQL row-level locks (`SELECT � FOR UPDATE`) prevent race-condition double bookings.
-- **Status State Machine** � Bookings follow enforced transitions: `confirmed ? checked_in ? checked_out`, `confirmed ? cancelled`.
-- **Admin Metrics Dashboard** � Live KPIs: total rooms, active bookings, occupancy %, and total revenue.
+- **Multi-Tenant Architecture** - Each admin manages only their own hotel's rooms and bookings; data is strictly isolated by `admin_id`.
+- **JWT Auth** - Scrypt-hashed passwords, JWT tokens, role-based access (`admin` / `customer`).
+- **Date-Aware Availability** - Room status is computed in real time from active bookings for a given check-in/check-out range.
+- **Atomic Booking Transactions** - PostgreSQL row-level locks (`SELECT ... FOR UPDATE`) prevent race-condition double bookings.
+- **Status State Machine** - Bookings follow enforced transitions: `confirmed -> checked_in -> checked_out`, `confirmed -> cancelled`.
+- **Admin Metrics Dashboard** - Live KPIs: total rooms, active bookings, occupancy %, and total revenue.
 
 ---
 
 ## Tech Stack
 
-| Layer | Technology |
-|---|---|
-| Frontend | Vanilla HTML/CSS/JS, Vite |
-| Backend | Node.js, Express |
-| Database | PostgreSQL |
-| Auth | JWT (`jsonwebtoken`), Scrypt (Node built-in) |
-| Testing | Node.js built-in test runner |
+| Layer    | Technology                            |
+|----------|---------------------------------------|
+| Frontend | Vanilla HTML/CSS/JS, Vite             |
+| Backend  | Node.js, Express                      |
+| Database | PostgreSQL                            |
+| Auth     | JWT (`jsonwebtoken`), Scrypt (Node built-in) |
+| Testing  | Node.js built-in test runner          |
 
 ---
 
@@ -31,22 +31,22 @@ A full-stack, multi-tenant Hotel Management System (HMS) with JWT authentication
 
 ```
 t1/
-+-- backend/
-�   +-- auth.js          # JWT helpers, password hashing, middleware
-�   +-- config.js        # Environment config
-�   +-- db.js            # PostgreSQL connection pool
-�   +-- server.js        # Express API routes
-�   +-- database/
-�   �   +-- schema.sql   # Table definitions (users, rooms, bookings)
-�   �   +-- seed.sql     # Demo data (admin + customer accounts)
-�   +-- tests/
-�       +-- postgres.test.js
-+-- frontend/
-�   +-- index.html       # Single-page app
-�   +-- css/
-�   +-- js/
-+-- vite.config.js
-+-- package.json
+├── backend/
+│   ├── auth.js          # JWT helpers, password hashing, middleware
+│   ├── config.js        # Environment config
+│   ├── db.js            # PostgreSQL connection pool
+│   ├── server.js        # Express API routes
+│   ├── database/
+│   │   ├── schema.sql   # Table definitions (users, rooms, bookings)
+│   │   └── seed.sql     # Demo data (admin + customer accounts)
+│   └── tests/
+│       └── postgres.test.js
+├── frontend/
+│   ├── index.html       # Single-page app
+│   ├── css/
+│   └── js/
+├── vite.config.js
+└── package.json
 ```
 
 ---
@@ -76,7 +76,7 @@ JWT_SECRET=your-secret-key
 PORT=5000
 ```
 
-### 3. Install & Run
+### 3. Install and Run
 
 ```bash
 # Install root dev dependencies (Vite)
@@ -98,10 +98,10 @@ npm run dev:frontend
 
 Seed data provides two ready-to-use accounts:
 
-| Role | Email | Password |
-|---|---|---|
-| ?? Admin / Staff | `admin@horizon.com` | `admin123` |
-| ?? Guest / Customer | `customer@horizon.com` | `guest123` |
+| Role            | Email                    | Password  |
+|-----------------|--------------------------|-----------|
+| Admin / Staff   | `admin@horizon.com`    | `admin123` |
+| Guest / Customer| `customer@horizon.com` | `guest123` |
 
 ---
 
@@ -111,34 +111,34 @@ All routes are prefixed with `/api`.
 
 ### Auth
 
-| Method | Route | Auth | Description |
-|---|---|---|---|
-| `POST` | `/auth/login` | � | Login, returns JWT |
-| `POST` | `/auth/register` | � | Register new user |
+| Method | Route             | Auth | Description           |
+|--------|-------------------|------|-----------------------|
+| POST   | /auth/login       | --   | Login, returns JWT    |
+| POST   | /auth/register    | --   | Register new user     |
 
 ### Rooms
 
-| Method | Route | Auth | Description |
-|---|---|---|---|
-| `GET` | `/rooms` | Optional | List rooms; supports `?checkIn=&checkOut=&type=&status=&hotelName=` |
-| `POST` | `/rooms` | Admin | Add a room to the admin's hotel |
-| `PATCH` | `/rooms/:id/status` | Admin | Update room status |
-| `DELETE` | `/rooms/:id` | Admin | Delete a room |
+| Method | Route               | Auth     | Description                                              |
+|--------|---------------------|----------|----------------------------------------------------------|
+| GET    | /rooms              | Optional | List rooms; supports `?checkIn=&checkOut=&type=&status=&hotelName=` |
+| POST   | /rooms              | Admin    | Add a room to the admin's hotel                          |
+| PATCH  | /rooms/:id/status   | Admin    | Update room status                                       |
+| DELETE | /rooms/:id          | Admin    | Delete a room                                            |
 
 ### Bookings
 
-| Method | Route | Auth | Description |
-|---|---|---|---|
-| `GET` | `/bookings` | Required | Admin sees hotel bookings; customer sees own bookings |
-| `POST` | `/bookings` | Required | Create booking (atomic, overlap-protected) |
-| `PATCH` | `/bookings/:id/status` | Required | Advance booking status |
+| Method | Route                    | Auth     | Description                                  |
+|--------|--------------------------|----------|----------------------------------------------|
+| GET    | /bookings                | Required | Admin sees hotel bookings; customer sees own |
+| POST   | /bookings                | Required | Create booking (atomic, overlap-protected)   |
+| PATCH  | /bookings/:id/status     | Required | Advance booking status                       |
 
 ### Admin
 
-| Method | Route | Auth | Description |
-|---|---|---|---|
-| `GET` | `/metrics` | Admin | Hotel KPIs (rooms, bookings, occupancy %, revenue) |
-| `GET` | `/health` | � | Server + DB health check |
+| Method | Route     | Auth  | Description                                        |
+|--------|-----------|-------|----------------------------------------------------|
+| GET    | /metrics  | Admin | Hotel KPIs (rooms, bookings, occupancy %, revenue) |
+| GET    | /health   | --    | Server + DB health check                           |
 
 ---
 
