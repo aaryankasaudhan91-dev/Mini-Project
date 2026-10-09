@@ -4,7 +4,7 @@
 
 import express from 'express';
 import cors from 'cors';
-import dotenv from 'dotenv';
+import { pathToFileURL } from 'node:url';
 import { pool } from './db.js';
 import {
   hashPassword,
@@ -15,9 +15,7 @@ import {
   optionalAuth
 } from './auth.js';
 
-dotenv.config();
-
-const app = express();
+export const app = express();
 const PORT = process.env.PORT || 5000;
 
 app.use(cors());
@@ -80,8 +78,12 @@ app.post('/api/auth/login', async (req, res) => {
 app.post('/api/auth/register', async (req, res) => {
   try {
     const { fullName, email, password, role = 'customer', hotelName = '' } = req.body;
-    if (!fullName || !email || !password) {
+    if (typeof fullName !== 'string' || !fullName.trim() || typeof email !== 'string' || !email.trim() || typeof password !== 'string' || typeof hotelName !== 'string') {
       return res.status(400).json({ error: 'Full name, email, and password are required' });
+    }
+
+    if (!['customer', 'admin'].includes(role)) {
+      return res.status(400).json({ error: 'Invalid account role' });
     }
 
     if (password.length < 6) {
@@ -153,10 +155,10 @@ app.get('/api/rooms', optionalAuth, async (req, res) => {
     }
 
     // Role-based or query-based hotel filtering:
-    // If an authenticated admin calls this without hotelName, scope to their hotel
+    // Hotel names are display/search fields; administrator IDs enforce ownership.
     if (req.user && req.user.role === 'admin') {
-      params.push(req.user.hotel_name);
-      query += ` AND LOWER(r.hotel_name) = LOWER($${params.length})`;
+      params.push(req.user.id);
+      query += ` AND r.admin_id = $${params.length}`;
     } else if (hotelName) {
       params.push(hotelName);
       query += ` AND LOWER(r.hotel_name) = LOWER($${params.length})`;
@@ -231,9 +233,9 @@ app.patch('/api/rooms/:id/status', requireAuth, requireAdmin, async (req, res) =
     const { status } = req.body;
 
     // Verify room belongs to this admin's hotel
-    const checkRoom = await pool.query('SELECT hotel_name FROM rooms WHERE id = $1', [id]);
+    const checkRoom = await pool.query('SELECT admin_id FROM rooms WHERE id = $1', [id]);
     if (checkRoom.rows.length === 0) return res.status(404).json({ error: 'Room not found' });
-    if (checkRoom.rows[0].hotel_name.toLowerCase() !== req.user.hotel_name.toLowerCase()) {
+    if (checkRoom.rows[0].admin_id !== req.user.id) {
       return res.status(403).json({ error: 'Permission denied: Cannot modify room of another hotel.' });
     }
 
@@ -253,9 +255,9 @@ app.delete('/api/rooms/:id', requireAuth, requireAdmin, async (req, res) => {
     const { id } = req.params;
 
     // Verify room belongs to this admin's hotel
-    const checkRoom = await pool.query('SELECT hotel_name FROM rooms WHERE id = $1', [id]);
+    const checkRoom = await pool.query('SELECT admin_id FROM rooms WHERE id = $1', [id]);
     if (checkRoom.rows.length === 0) return res.status(404).json({ error: 'Room not found' });
-    if (checkRoom.rows[0].hotel_name.toLowerCase() !== req.user.hotel_name.toLowerCase()) {
+    if (checkRoom.rows[0].admin_id !== req.user.id) {
       return res.status(403).json({ error: 'Permission denied: Cannot delete room of another hotel.' });
     }
 
@@ -283,8 +285,8 @@ app.get('/api/bookings', requireAuth, async (req, res) => {
     // Strict Role-Based Data Isolation:
     if (req.user.role === 'admin') {
       // Admin sees ONLY bookings for their own hotel
-      params.push(req.user.hotel_name);
-      query += ` AND LOWER(b.hotel_name) = LOWER($${params.length})`;
+      params.push(req.user.id);
+      query += ` AND b.admin_id = $${params.length}`;
     } else {
       // Customer sees ONLY their own bookings
       params.push(req.user.id);
@@ -305,7 +307,7 @@ app.get('/api/bookings', requireAuth, async (req, res) => {
  * Eliminates race-condition double bookings across concurrent requests
  */
 app.post('/api/bookings', requireAuth, async (req, res) => {
-  const client = await pool.connect();
+  let client;
   try {
     const { roomId, checkIn, checkOut, customerName, customerEmail } = req.body;
     if (!roomId || !checkIn || !checkOut) {
@@ -321,7 +323,8 @@ app.post('/api/bookings', requireAuth, async (req, res) => {
       return res.status(400).json({ error: 'Check-out date must be strictly after check-in date' });
     }
 
-    // Begin ACID transaction
+    // Acquire inside the handler so connection failures receive an HTTP response.
+    client = await pool.connect();
     await client.query('BEGIN');
 
     // Acquire exclusive row lock on the target room
@@ -381,63 +384,98 @@ app.post('/api/bookings', requireAuth, async (req, res) => {
     await client.query('COMMIT');
     res.status(201).json(bookingRes.rows[0]);
   } catch (err) {
-    await client.query('ROLLBACK');
+    if (client) await client.query('ROLLBACK').catch(() => {});
     console.error('Create booking transaction error:', err);
-    res.status(500).json({ error: 'Failed to create booking: ' + err.message });
+    res.status(500).json({ error: 'Failed to create booking' });
   } finally {
-    client.release();
+    client?.release();
   }
 });
 
 app.patch('/api/bookings/:id/status', requireAuth, async (req, res) => {
+  let client;
   try {
     const { id } = req.params;
     const { status } = req.body;
+    const transitions = {
+      confirmed: ['checked_in', 'cancelled'],
+      checked_in: ['checked_out'],
+      checked_out: [],
+      cancelled: ['confirmed']
+    };
+    if (!Object.hasOwn(transitions, status)) {
+      return res.status(400).json({ error: 'Invalid booking status' });
+    }
 
-    const findBooking = await pool.query('SELECT * FROM bookings WHERE id = $1', [id]);
-    if (findBooking.rows.length === 0) return res.status(404).json({ error: 'Booking not found' });
-    const booking = findBooking.rows[0];
+    client = await pool.connect();
+    await client.query('BEGIN');
+    const reject = async (code, error) => {
+      await client.query('ROLLBACK');
+      return res.status(code).json({ error });
+    };
+    const initial = await client.query('SELECT * FROM bookings WHERE id = $1', [id]);
+    if (!initial.rows.length) return await reject(404, 'Booking not found');
 
-    // Permission checks
+    // Lock room before booking, matching creation's lock order.
+    const roomResult = await client.query('SELECT * FROM rooms WHERE id = $1 FOR UPDATE', [initial.rows[0].room_id]);
+    if (!roomResult.rows.length) return await reject(404, 'Room not found');
+    const current = await client.query('SELECT * FROM bookings WHERE id = $1 FOR UPDATE', [id]);
+    if (!current.rows.length) return await reject(404, 'Booking not found');
+    const booking = current.rows[0];
+    const room = roomResult.rows[0];
+
     if (req.user.role === 'customer') {
-      // Customer can ONLY cancel their own booking
-      if (booking.user_id !== req.user.id) {
-        return res.status(403).json({ error: 'Permission denied: Cannot modify another customer reservation.' });
+      if (booking.user_id !== req.user.id || status !== 'cancelled') {
+        return await reject(403, 'Customers can only cancel their own reservations.');
       }
-      if (status !== 'cancelled') {
-        return res.status(403).json({ error: 'Customers can only cancel reservations.' });
+      if (!['confirmed', 'cancelled'].includes(booking.status)) {
+        return await reject(409, 'Only confirmed reservations can be cancelled.');
       }
-    } else if (req.user.role === 'admin') {
-      // Admin must manage their own hotel's bookings
-      if (booking.hotel_name.toLowerCase() !== req.user.hotel_name.toLowerCase()) {
-        return res.status(403).json({ error: 'Permission denied: Cannot modify reservation for another hotel.' });
-      }
+    } else if (req.user.role !== 'admin' || room.admin_id !== req.user.id) {
+      return await reject(403, 'Permission denied: Cannot modify another hotel reservation.');
     }
 
-    const result = await pool.query(
-      'UPDATE bookings SET status = $1 WHERE id = $2 RETURNING *',
-      [status, id]
-    );
-    const updated = result.rows[0];
-
-    // Synchronize Room Status:
-    // If guest checked in -> mark room as 'occupied'
-    if (status === 'checked_in') {
-      await pool.query("UPDATE rooms SET status = 'occupied' WHERE id = $1", [booking.room_id]);
-    } else if (status === 'checked_out' || status === 'cancelled') {
-      const activeRes = await pool.query(
-        "SELECT id FROM bookings WHERE room_id = $1 AND status = 'checked_in' AND id != $2",
-        [booking.room_id, id]
+    if (status === booking.status) {
+      await client.query('COMMIT');
+      return res.json(booking);
+    }
+    if (!transitions[booking.status]?.includes(status)) {
+      return await reject(409, `Cannot change ${booking.status} to ${status}.`);
+    }
+    if (['confirmed', 'checked_in'].includes(status)) {
+      if (room.status === 'maintenance') {
+        return await reject(409, 'Room is under maintenance.');
+      }
+      const conflict = await client.query(
+        `SELECT id FROM bookings
+         WHERE room_id = $1 AND id != $2
+           AND status IN ('confirmed', 'checked_in')
+           AND check_in < $3 AND check_out > $4`,
+        [booking.room_id, booking.id, booking.check_out, booking.check_in]
       );
-      if (activeRes.rows.length === 0) {
-        await pool.query("UPDATE rooms SET status = 'available' WHERE id = $1 AND status = 'occupied'", [booking.room_id]);
-      }
+      if (conflict.rows.length) return await reject(409, 'Room is already reserved for overlapping dates.');
     }
 
-    res.json(updated);
+    const result = await client.query(
+      'UPDATE bookings SET status = $1 WHERE id = $2 RETURNING *', [status, id]
+    );
+    // Reservation and cached room occupancy commit or roll back together.
+    await client.query(
+      `UPDATE rooms SET status = CASE
+         WHEN status = 'maintenance' THEN 'maintenance'
+         WHEN EXISTS (SELECT 1 FROM bookings WHERE room_id = $1 AND status = 'checked_in')
+           THEN 'occupied'
+         ELSE 'available'
+       END WHERE id = $1`, [booking.room_id]
+    );
+    await client.query('COMMIT');
+    res.json(result.rows[0]);
   } catch (err) {
+    if (client) await client.query('ROLLBACK').catch(() => {});
     console.error('Update booking status error:', err);
     res.status(500).json({ error: 'Failed to update booking status' });
+  } finally {
+    client?.release();
   }
 });
 
@@ -447,30 +485,38 @@ app.patch('/api/bookings/:id/status', requireAuth, async (req, res) => {
 app.get('/api/metrics', requireAuth, requireAdmin, async (req, res) => {
   try {
     const hotelName = req.user.hotel_name;
-    const params = [hotelName];
+    const params = [req.user.id];
 
     const totalRoomsRes = await pool.query(
-      'SELECT COUNT(*) FROM rooms WHERE LOWER(hotel_name) = LOWER($1)',
+      'SELECT COUNT(*) FROM rooms WHERE admin_id = $1',
       params
     );
     const activeBookingsRes = await pool.query(
-      "SELECT COUNT(*) FROM bookings WHERE LOWER(hotel_name) = LOWER($1) AND status IN ('confirmed', 'checked_in')",
+      "SELECT COUNT(*) FROM bookings WHERE admin_id = $1 AND status IN ('confirmed', 'checked_in')",
+      params
+    );
+    const occupiedRoomsRes = await pool.query(
+      `SELECT COUNT(DISTINCT room_id) AS count FROM bookings
+       WHERE admin_id = $1 AND status IN ('confirmed', 'checked_in')
+         AND check_in <= CURRENT_DATE AND check_out > CURRENT_DATE`,
       params
     );
     const revenueRes = await pool.query(
-      "SELECT COALESCE(SUM(total_amount), 0) AS revenue FROM bookings WHERE LOWER(hotel_name) = LOWER($1) AND status != 'cancelled'",
+      "SELECT COALESCE(SUM(total_amount), 0) AS revenue FROM bookings WHERE admin_id = $1 AND status != 'cancelled'",
       params
     );
 
     const totalRooms = parseInt(totalRoomsRes.rows[0].count, 10);
     const activeBookings = parseInt(activeBookingsRes.rows[0].count, 10);
-    const occupancyRate = totalRooms > 0 ? Math.min(100, Math.round((activeBookings / totalRooms) * 100)) : 0;
+    const occupiedRooms = parseInt(occupiedRoomsRes.rows[0].count, 10);
+    const occupancyRate = totalRooms > 0 ? Math.round((occupiedRooms / totalRooms) * 100) : 0;
     const totalRevenue = parseFloat(revenueRes.rows[0].revenue);
 
     res.json({
       hotelName,
       totalRooms,
       activeBookings,
+      occupiedRooms,
       occupancyRate,
       totalRevenue
     });
@@ -480,6 +526,8 @@ app.get('/api/metrics', requireAuth, requireAdmin, async (req, res) => {
   }
 });
 
-app.listen(PORT, () => {
-  console.log(`🏨 HMS Backend Server running securely at http://localhost:${PORT}`);
-});
+if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
+  app.listen(PORT, () => {
+    console.log(`HMS Backend Server running at http://localhost:${PORT}`);
+  });
+}

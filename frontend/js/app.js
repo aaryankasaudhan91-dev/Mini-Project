@@ -204,6 +204,7 @@ document.getElementById('spa-register-form')?.addEventListener('submit', async (
 // 4. RESERVATION MODAL LOGIC (Secure ID Lookup)
 // ============================================================================
 let activeModalRoom = null;
+let customerStay = null;
 const bookingModal = document.getElementById('spa-booking-modal');
 const modalSummary = document.getElementById('spa-modal-summary');
 const modalCheckin = document.getElementById('spa-modal-checkin');
@@ -228,12 +229,13 @@ window.triggerBookingModal = function(room) {
 
     activeModalRoom = room;
     const today = new Date().toISOString().split('T')[0];
-    const tomorrow = new Date(Date.now() + 86400000 * 2).toISOString().split('T')[0];
+    const tomorrow = new Date(Date.now() + 86400000).toISOString().split('T')[0];
 
     modalCheckin.min = today;
-    modalCheckin.value = today;
+    const stay = window.location.hash === '#customer' ? customerStay : null;
+    modalCheckin.value = stay?.checkIn || today;
     modalCheckout.min = today;
-    modalCheckout.value = tomorrow;
+    modalCheckout.value = stay?.checkOut || tomorrow;
 
     modalSummary.innerHTML = `
         <strong>Room ${escapeHtml(room.room_number)} (${escapeHtml(room.room_type)})</strong><br>
@@ -402,7 +404,7 @@ async function loadCustomerPortal() {
     if (bannerWelcome) bannerWelcome.textContent = `Welcome, ${escapeHtml(user.full_name)}`;
 
     const today = new Date().toISOString().split('T')[0];
-    const tomorrow = new Date(Date.now() + 86400000 * 2).toISOString().split('T')[0];
+    const tomorrow = new Date(Date.now() + 86400000).toISOString().split('T')[0];
     const ci = document.getElementById('cust-checkin');
     const co = document.getElementById('cust-checkout');
     if (ci && !ci.value) { ci.min = today; ci.value = today; }
@@ -428,6 +430,7 @@ async function searchCustomerRooms() {
         checkOut: checkOut || undefined
     });
 
+    customerStay = checkIn && checkOut ? { checkIn, checkOut } : null;
     const grid = document.getElementById('customer-available-grid');
     if (!grid) return;
 
@@ -591,10 +594,9 @@ async function loadAdminPortal() {
                         <td><span class="badge-clean badge-${b.status}">${b.status}</span></td>
                         <td>
                             <select class="btn-secondary" style="padding: 0.3rem 0.5rem; font-size: 0.8rem;" onchange="updateBookingStatusAction(${b.id}, this.value)">
-                                <option value="confirmed" ${b.status === 'confirmed' ? 'selected' : ''}>Confirmed</option>
-                                <option value="checked_in" ${b.status === 'checked_in' ? 'selected' : ''}>Checked In</option>
-                                <option value="checked_out" ${b.status === 'checked_out' ? 'selected' : ''}>Checked Out</option>
-                                <option value="cancelled" ${b.status === 'cancelled' ? 'selected' : ''}>Cancelled</option>
+                                ${[b.status, ...({ confirmed: ['checked_in', 'cancelled'], checked_in: ['checked_out'], checked_out: [], cancelled: ['confirmed'] }[b.status] || [])].map(status =>
+                                    `<option value="${status}" ${status === b.status ? 'selected' : ''}>${status.replace('_', ' ')}</option>`
+                                ).join('')}
                             </select>
                         </td>
                     </tr>

@@ -4,7 +4,12 @@
 import crypto from 'crypto';
 import jwt from 'jsonwebtoken';
 
-const JWT_SECRET = process.env.JWT_SECRET || 'hms-secure-jwt-secret-key-2026-production';
+import './config.js';
+
+const JWT_SECRET = process.env.JWT_SECRET;
+if (!JWT_SECRET || JWT_SECRET.length < 32 || JWT_SECRET === 'hms-secure-jwt-secret-key-2026-production') {
+  throw new Error('Configure JWT_SECRET with a random secret of at least 32 characters.');
+}
 const TOKEN_EXPIRY = '7d';
 
 /**
@@ -27,7 +32,7 @@ export function verifyPassword(password, storedPassword) {
     const [salt, key] = storedPassword.split(':');
     const keyBuffer = Buffer.from(key, 'hex');
     const derivedKey = crypto.scryptSync(password, salt, 64);
-    return crypto.timingSafeEqual(keyBuffer, derivedKey);
+    return keyBuffer.length === derivedKey.length && crypto.timingSafeEqual(keyBuffer, derivedKey);
   }
   
   // Legacy fallback for plain text seed passwords
@@ -62,7 +67,10 @@ export function requireAuth(req, res, next) {
 
   const token = authHeader.split(' ')[1];
   try {
-    const decoded = jwt.verify(token, JWT_SECRET);
+    const decoded = jwt.verify(token, JWT_SECRET, { algorithms: ['HS256'] });
+    if (!Number.isInteger(decoded.id) || !['admin', 'customer'].includes(decoded.role)) {
+      return res.status(401).json({ error: 'Invalid session identity.' });
+    }
     req.user = decoded;
     next();
   } catch (err) {
@@ -78,7 +86,8 @@ export function optionalAuth(req, res, next) {
   if (authHeader && authHeader.startsWith('Bearer ')) {
     const token = authHeader.split(' ')[1];
     try {
-      req.user = jwt.verify(token, JWT_SECRET);
+      const decoded = jwt.verify(token, JWT_SECRET, { algorithms: ['HS256'] });
+      if (Number.isInteger(decoded.id) && ['admin', 'customer'].includes(decoded.role)) req.user = decoded;
     } catch {
       // Ignore invalid optional token
     }
