@@ -86,8 +86,8 @@ app.post('/api/auth/register', async (req, res) => {
       return res.status(400).json({ error: 'Invalid account role' });
     }
 
-    if (password.length < 6) {
-      return res.status(400).json({ error: 'Password must be at least 6 characters' });
+    if (password.length < 10) {
+      return res.status(400).json({ error: 'Password must be at least 10 characters' });
     }
 
     const existing = await pool.query(
