@@ -10,6 +10,7 @@ export const pool = new Pool({
   password: process.env.PGPASSWORD,
   database: process.env.PGDATABASE || 'hms_db',
   max: 10,
+  connectionTimeoutMillis: 5000,
   idleTimeoutMillis: 30000,
 });
 

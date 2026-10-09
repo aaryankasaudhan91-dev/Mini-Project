@@ -308,6 +308,7 @@ app.get('/api/bookings', requireAuth, async (req, res) => {
  */
 app.post('/api/bookings', requireAuth, async (req, res) => {
   let client;
+  let discardClient = false;
   try {
     const { roomId, checkIn, checkOut, customerName, customerEmail } = req.body;
     if (!roomId || !checkIn || !checkOut) {
@@ -384,16 +385,17 @@ app.post('/api/bookings', requireAuth, async (req, res) => {
     await client.query('COMMIT');
     res.status(201).json(bookingRes.rows[0]);
   } catch (err) {
-    if (client) await client.query('ROLLBACK').catch(() => {});
+    if (client) await client.query('ROLLBACK').catch(() => { discardClient = true; });
     console.error('Create booking transaction error:', err);
     res.status(500).json({ error: 'Failed to create booking' });
   } finally {
-    client?.release();
+    client?.release(discardClient);
   }
 });
 
 app.patch('/api/bookings/:id/status', requireAuth, async (req, res) => {
   let client;
+  let discardClient = false;
   try {
     const { id } = req.params;
     const { status } = req.body;
@@ -403,7 +405,7 @@ app.patch('/api/bookings/:id/status', requireAuth, async (req, res) => {
       checked_out: [],
       cancelled: ['confirmed']
     };
-    if (!Object.hasOwn(transitions, status)) {
+    if (typeof status !== 'string' || !Object.hasOwn(transitions, status)) {
       return res.status(400).json({ error: 'Invalid booking status' });
     }
 
@@ -471,11 +473,11 @@ app.patch('/api/bookings/:id/status', requireAuth, async (req, res) => {
     await client.query('COMMIT');
     res.json(result.rows[0]);
   } catch (err) {
-    if (client) await client.query('ROLLBACK').catch(() => {});
+    if (client) await client.query('ROLLBACK').catch(() => { discardClient = true; });
     console.error('Update booking status error:', err);
     res.status(500).json({ error: 'Failed to update booking status' });
   } finally {
-    client?.release();
+    client?.release(discardClient);
   }
 });
 

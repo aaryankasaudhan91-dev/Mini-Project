@@ -1,0 +1,252 @@
+{
+  "schema_version": 1,
+  "diagram_type": "architecture",
+  "meta": {
+    "title": "HMS · Reservations & Property Operations",
+    "output": ".archify/architecture-hms-20261009-210323/hms-architecture.html",
+    "quality_profile": "showcase",
+    "locale": "en",
+    "repository": {
+      "url": "file:///C:/Users/rajku/Documents/Codex/2026-10-09/d-devanshi-project-21-hms-models/work/archify-source",
+      "revision": "718fc1d632f7c80689a8c22761df7a7e27f597f8",
+      "link_mode": "local-only"
+    }
+  },
+  "components": [
+    {
+      "id": "portal",
+      "type": "frontend",
+      "label": "Guest & staff portals",
+      "sublabel": "Search, reserve, manage stays",
+      "pos": [
+        40,
+        130
+      ],
+      "size": [
+        230,
+        86
+      ],
+      "sources": [
+        {
+          "path": "frontend/js/app.js",
+          "line": 221,
+          "end_line": 288
+        },
+        {
+          "path": "frontend/js/app.js",
+          "line": 415,
+          "end_line": 474
+        },
+        {
+          "path": "frontend/js/app.js",
+          "line": 517,
+          "end_line": 614
+        }
+      ]
+    },
+    {
+      "id": "client",
+      "type": "frontend",
+      "label": "API client",
+      "sublabel": "JSON requests + Bearer token",
+      "pos": [
+        430,
+        130
+      ],
+      "size": [
+        230,
+        86
+      ],
+      "sources": [
+        {
+          "path": "frontend/js/api.js",
+          "line": 8,
+          "end_line": 28
+        },
+        {
+          "path": "frontend/js/api.js",
+          "line": 64,
+          "end_line": 140
+        }
+      ]
+    },
+    {
+      "id": "session",
+      "type": "database",
+      "label": "Browser session",
+      "sublabel": "JWT + user in localStorage",
+      "pos": [
+        40,
+        360
+      ],
+      "size": [
+        230,
+        86
+      ],
+      "sources": [
+        {
+          "path": "frontend/js/store.js",
+          "line": 16,
+          "end_line": 44
+        }
+      ]
+    },
+    {
+      "id": "routes",
+      "type": "backend",
+      "label": "Express API",
+      "sublabel": "Rooms, reservations, metrics",
+      "pos": [
+        430,
+        360
+      ],
+      "size": [
+        230,
+        86
+      ],
+      "sources": [
+        {
+          "path": "backend/server.js",
+          "line": 129,
+          "end_line": 305
+        },
+        {
+          "path": "backend/server.js",
+          "line": 309,
+          "end_line": 479
+        },
+        {
+          "path": "backend/server.js",
+          "line": 487,
+          "end_line": 528
+        }
+      ]
+    },
+    {
+      "id": "auth",
+      "type": "security",
+      "label": "JWT access guards",
+      "sublabel": "Secret required; role checked",
+      "pos": [
+        820,
+        360
+      ],
+      "size": [
+        230,
+        86
+      ],
+      "sources": [
+        {
+          "path": "backend/auth.js",
+          "line": 7,
+          "end_line": 104
+        }
+      ]
+    },
+    {
+      "id": "postgres",
+      "type": "database",
+      "label": "PostgreSQL",
+      "sublabel": "Users, rooms, bookings",
+      "pos": [
+        430,
+        600
+      ],
+      "size": [
+        230,
+        86
+      ],
+      "sources": [
+        {
+          "path": "backend/db.js",
+          "line": 1,
+          "end_line": 24
+        },
+        {
+          "path": "backend/database/schema.sql",
+          "line": 8,
+          "end_line": 50
+        },
+        {
+          "path": "backend/server.js",
+          "line": 329,
+          "end_line": 379
+        }
+      ]
+    }
+  ],
+  "connections": [
+    {
+      "id": "portal-api",
+      "from": "portal",
+      "to": "client",
+      "label": "API calls",
+      "variant": "emphasis"
+    },
+    {
+      "id": "portal-session",
+      "from": "portal",
+      "to": "session",
+      "label": "Read / write"
+    },
+    {
+      "id": "client-api",
+      "from": "client",
+      "to": "routes",
+      "label": "HTTP /api",
+      "variant": "emphasis"
+    },
+    {
+      "id": "route-auth",
+      "from": "routes",
+      "to": "auth",
+      "label": "Protected routes",
+      "variant": "security"
+    },
+    {
+      "id": "route-sql",
+      "from": "routes",
+      "to": "postgres",
+      "label": "SQL + room locks",
+      "variant": "emphasis"
+    }
+  ],
+  "cards": [
+    {
+      "dot": "rose",
+      "title": "Owner isolation",
+      "items": [
+        "Administrator IDs scope rooms, bookings and metrics.",
+        "Hotel names label properties; they never grant management access.",
+        "Customers may cancel only their own confirmed reservations."
+      ]
+    },
+    {
+      "dot": "emerald",
+      "title": "Reservation integrity",
+      "items": [
+        "Creation and activation lock the room before checking overlaps.",
+        "Booking status and room occupancy commit in one transaction.",
+        "Cancelled stays can be restored only when the dates remain free."
+      ]
+    },
+    {
+      "dot": "cyan",
+      "title": "Dates & occupancy",
+      "items": [
+        "The reservation modal keeps the last searched stay window.",
+        "Occupancy counts distinct reserved rooms overlapping today.",
+        "Checkout dates are excluded from the occupied date range."
+      ]
+    },
+    {
+      "dot": "slate",
+      "title": "Source evidence",
+      "items": [
+        "Sources refer to a local snapshot of the updated code.",
+        "The snapshot is not a published repository revision.",
+        "28 checks passed, including PostgreSQL concurrency and rollback tests."
+      ]
+    }
+  ]
+}
