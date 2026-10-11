@@ -16,7 +16,7 @@ import {
 } from './auth.js';
 
 export const app = express();
-const PORT = process.env.PORT || 5000;
+const PORT = process.env.PORT;
 
 app.use(cors());
 app.use(express.json());
@@ -58,7 +58,7 @@ app.post('/api/auth/login', async (req, res) => {
 
     // Upgrade plaintext password to hash in background if needed
     if (!user.password.includes(':')) {
-      pool.query('UPDATE users SET password = $1 WHERE id = $2', [hashPassword(password), user.id]).catch(() => {});
+      pool.query('UPDATE users SET password = $1 WHERE id = $2', [hashPassword(password), user.id]).catch(() => { });
     }
 
     const { password: _, ...userWithoutPassword } = user;

@@ -5,7 +5,7 @@ import { Store } from './store.js';
 
 // Access backend endpoint dynamically from environment variable (Vite / Node / Browser config)
 const ENV_API = (typeof import.meta !== 'undefined' && import.meta.env && (import.meta.env.VITE_API_URL || import.meta.env.VITE_API_BASE_URL));
-const API_BASE = ENV_API || (typeof window !== 'undefined' && window.__ENV__?.VITE_API_URL) || 'http://localhost:5000/api';
+const API_BASE = ENV_API || (typeof window !== 'undefined' && window.__ENV__?.VITE_API_URL);
 
 function getHeaders(contentType = 'application/json') {
   const headers = {};
