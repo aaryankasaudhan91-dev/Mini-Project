@@ -6,17 +6,20 @@ A full-stack, multi-tenant Hotel Management System engineered with Node.js, Expr
 
 ## Visual Preview
 
-### Guest Portal & Home
+### Luxury Resort Home & 3D Interactive Pavilion
 ![Grand Horizon Portal Home](screenshots/home.png)
+
+### Resort Commercial Trailer & Sovereign VIP Circle
+![Resort Video Trailer & VIP Sovereign Banner](screenshots/trailer.png)
+
+### Real-Time Rooms & Suites Explorer
+![Rooms and Suites Availability Explorer](screenshots/rooms.png)
 
 ### Active Checked-In Stay & In-Stay Room Service
 ![Active Checked-In Stay Portal](screenshots/guest.png)
 
-### In-Stay Dining & Hotel Services Ordering Modal
-![Order Dining & Services Modal](screenshots/order.png)
-
-### Real-Time Rooms & Suites Explorer
-![Rooms and Suites Availability Explorer](screenshots/rooms.png)
+### Secure Authentication & 1-Click Instant Demo Login
+![Sign In & Demo Authentication](screenshots/login.png)
 
 ---
 
@@ -260,10 +263,11 @@ t1/
 │       ├── notifications.js # Text-safe notification toasts & modals
 │       └── store.js     # SessionStorage token & user state manager
 ├── screenshots/
-│   ├── home.png         # Screenshot of the portal homepage
+│   ├── home.png         # Screenshot of the luxury resort homepage & 3D pavilion
+│   ├── trailer.png      # Screenshot of the commercial video trailer & VIP tier
+│   ├── rooms.png        # Screenshot of rooms & suites availability explorer
 │   ├── guest.png        # Screenshot of active checked-in stay guest portal
-│   ├── order.png        # Screenshot of dining & service ordering modal
-│   └── rooms.png        # Screenshot of rooms & suites explorer
+│   └── login.png        # Screenshot of authentication & 1-click demo logins
 ├── ARCHITECTURE.md      # Architecture documentation
 ├── DESIGN.md            # Visual specification & design tokens
 └── README.md
