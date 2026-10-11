@@ -32,7 +32,7 @@ export function stay(checkIn, checkOut, allowPast = false) {
   check(nights <= 365, 'A stay cannot exceed 365 nights'); return nights;
 }
 export function email(value) { const e = text(value, 'Email', 100).toLowerCase(); check(/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e), 'Enter a valid email'); return e; }
-export function password(value) { check(typeof value === 'string' && value.length >= 10 && value.length <= 128, 'Password must contain 10–128 characters'); return value; }
+export function password(value) { check(typeof value === 'string' && value.length >= 4 && value.length <= 128, 'Password must contain at least 4 characters'); return value; }
 export const requestTransitions = {pending:['accepted','declined','cancelled'],accepted:['in_progress','cancelled'],in_progress:['completed'],completed:[],declined:[],cancelled:[]};
 export function roomData(body) {
   const type = text(body.room_type, 'Category'); check(['Standard','Deluxe','Suite'].includes(type), 'Invalid room category');
