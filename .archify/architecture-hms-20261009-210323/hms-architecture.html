@@ -5261,7 +5261,7 @@ OTHER DEALINGS IN THE FONT SOFTWARE.
           <h3>Owner isolation</h3>
         </div>
         <ul>
-          <li>Administrator IDs scope rooms, bookings and metrics.</li>
+          <li>Administrator IDs scope rooms, bookings, catalog, orders and metrics.</li>
           <li>Hotel names label properties; they never grant management access.</li>
           <li>Customers may cancel only their own confirmed reservations.</li>
         </ul>
@@ -5273,33 +5273,33 @@ OTHER DEALINGS IN THE FONT SOFTWARE.
           <h3>Reservation integrity</h3>
         </div>
         <ul>
-          <li>Creation and activation lock the room before checking overlaps.</li>
-          <li>Booking status and room occupancy commit in one transaction.</li>
-          <li>Cancelled stays can be restored only when the dates remain free.</li>
+          <li>PostgreSQL row-level locks protect concurrent bookings.</li>
+          <li>Date-aware availability calculated dynamically from active bookings.</li>
+          <li>Housekeeping states (ready/dirty/cleaning/maintenance) enforce turnover.</li>
         </ul>
       </div>
 
       <div class="card">
         <div class="card-header">
           <div class="card-dot cyan"></div>
-          <h3>Dates &amp; occupancy</h3>
+          <h3>Unified checkout billing</h3>
         </div>
         <ul>
-          <li>The reservation modal keeps the last searched stay window.</li>
-          <li>Occupancy counts distinct reserved rooms overlapping today.</li>
-          <li>Checkout dates are excluded from the occupied date range.</li>
+          <li>Completed food and service orders combine with room stay into one bill.</li>
+          <li>Pending, declined and cancelled requests are excluded from charges.</li>
+          <li>Reception staff record payment (cash/card/bank) and check out atomically.</li>
         </ul>
       </div>
 
       <div class="card">
         <div class="card-header">
           <div class="card-dot slate"></div>
-          <h3>Source evidence</h3>
+          <h3>Security &amp; session management</h3>
         </div>
         <ul>
-          <li>Sources refer to a local snapshot of the updated code.</li>
-          <li>The snapshot is not a published repository revision.</li>
-          <li>28 checks passed, including PostgreSQL concurrency and rollback tests.</li>
+          <li>Async salted scrypt hashing with no plaintext fallback.</li>
+          <li>Database-backed revocable sessions with per-IP rate limiting.</li>
+          <li>Single-use staff invitation tokens and private recovery codes.</li>
         </ul>
       </div>
     </div>
