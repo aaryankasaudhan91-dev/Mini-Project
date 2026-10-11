@@ -74,7 +74,7 @@
       "id": "session",
       "type": "database",
       "label": "Browser session",
-      "sublabel": "JWT + user in localStorage",
+      "sublabel": "JWT + user in sessionStorage (tab storage)",
       "pos": [
         40,
         360
@@ -86,8 +86,8 @@
       "sources": [
         {
           "path": "frontend/js/store.js",
-          "line": 16,
-          "end_line": 44
+          "line": 1,
+          "end_line": 17
         }
       ]
     },
@@ -95,7 +95,7 @@
       "id": "routes",
       "type": "backend",
       "label": "Express API",
-      "sublabel": "Rooms, reservations, metrics",
+      "sublabel": "Rooms, bookings, catalog, orders, billing",
       "pos": [
         430,
         360
@@ -107,18 +107,8 @@
       "sources": [
         {
           "path": "backend/server.js",
-          "line": 129,
-          "end_line": 305
-        },
-        {
-          "path": "backend/server.js",
-          "line": 309,
-          "end_line": 479
-        },
-        {
-          "path": "backend/server.js",
-          "line": 487,
-          "end_line": 528
+          "line": 50,
+          "end_line": 288
         }
       ]
     },
@@ -126,7 +116,7 @@
       "id": "auth",
       "type": "security",
       "label": "JWT access guards",
-      "sublabel": "Secret required; role checked",
+      "sublabel": "Async scrypt, revocable sessions, UUID checks",
       "pos": [
         820,
         360
@@ -138,8 +128,8 @@
       "sources": [
         {
           "path": "backend/auth.js",
-          "line": 7,
-          "end_line": 104
+          "line": 1,
+          "end_line": 40
         }
       ]
     },
@@ -147,7 +137,7 @@
       "id": "postgres",
       "type": "database",
       "label": "PostgreSQL",
-      "sublabel": "Users, rooms, bookings",
+      "sublabel": "Multi-tenant schema + operational tables",
       "pos": [
         430,
         600
@@ -216,7 +206,7 @@
       "dot": "rose",
       "title": "Owner isolation",
       "items": [
-        "Administrator IDs scope rooms, bookings and metrics.",
+        "Administrator IDs scope rooms, bookings, catalog, orders and metrics.",
         "Hotel names label properties; they never grant management access.",
         "Customers may cancel only their own confirmed reservations."
       ]
@@ -225,27 +215,27 @@
       "dot": "emerald",
       "title": "Reservation integrity",
       "items": [
-        "Creation and activation lock the room before checking overlaps.",
-        "Booking status and room occupancy commit in one transaction.",
-        "Cancelled stays can be restored only when the dates remain free."
+        "PostgreSQL row-level locks protect concurrent bookings.",
+        "Date-aware availability calculated dynamically from active bookings.",
+        "Housekeeping states (ready/dirty/cleaning/maintenance) enforce turnover."
       ]
     },
     {
       "dot": "cyan",
-      "title": "Dates & occupancy",
+      "title": "Unified checkout billing",
       "items": [
-        "The reservation modal keeps the last searched stay window.",
-        "Occupancy counts distinct reserved rooms overlapping today.",
-        "Checkout dates are excluded from the occupied date range."
+        "Completed food and service orders combine with room stay into one bill.",
+        "Pending, declined and cancelled requests are excluded from charges.",
+        "Reception staff record payment (cash/card/bank) and check out atomically."
       ]
     },
     {
       "dot": "slate",
-      "title": "Source evidence",
+      "title": "Security & session management",
       "items": [
-        "Sources refer to a local snapshot of the updated code.",
-        "The snapshot is not a published repository revision.",
-        "28 checks passed, including PostgreSQL concurrency and rollback tests."
+        "Async salted scrypt hashing with no plaintext fallback.",
+        "Database-backed revocable sessions with per-IP rate limiting.",
+        "Single-use staff invitation tokens and private recovery codes."
       ]
     }
   ]
