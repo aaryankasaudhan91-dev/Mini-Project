@@ -1,3 +1,154 @@
 <!doctype html>
-<html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#123c36"><title>Horizon · Hotel management</title><link rel="stylesheet" href="/css/app.css"></head>
-<body><a class="skip" href="#main">Skip to content</a><header><a class="brand" href="#home">Horizon<span>Hotel management</span></a><nav id="nav" aria-label="Main navigation"></nav></header><main id="main" tabindex="-1"></main><footer>Room reservations · Guest dining & services · Payment at checkout <a href="#privacy">Privacy & terms</a></footer><div id="notices" role="status" aria-live="polite"></div><dialog id="dialog" aria-labelledby="dialog-title"></dialog><script type="module" src="/js/app.js"></script></body></html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta http-equiv="Content-Security-Policy" content="upgrade-insecure-requests">
+  <meta name="theme-color" content="#005c55">
+  <title>Grand Horizon · Luxury Hotel &amp; Management</title>
+  <meta name="description" content="Experience coastal luxury and seamless hotel management at Grand Horizon. Real-time room availability, personalized guest orders, and transparent single-bill checkout.">
+  <meta name="keywords" content="Grand Horizon, hotel management, luxury resort, room booking, guest portal, checkout bill">
+  <meta name="author" content="Grand Horizon Resort &amp; Spa">
+
+  <!-- Open Graph / Social Media Preview -->
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://grandhorizon.hotel/">
+  <meta property="og:title" content="Grand Horizon · Luxury Hotel &amp; Management">
+  <meta property="og:description" content="Coastal luxury accommodation and seamless hospitality management with real-time room reservations and unified billing.">
+  <meta property="og:image" content="/og-image.svg">
+
+  <!-- Twitter Card -->
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Grand Horizon · Luxury Hotel &amp; Management">
+  <meta name="twitter:description" content="Coastal luxury accommodation and seamless hospitality management with real-time room reservations and unified billing.">
+  <meta name="twitter:image" content="/og-image.svg">
+
+  <!-- Favicon: Single Brand SVG Logo -->
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+
+  <!-- Google Fonts: Plus Jakarta Sans & Inter -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap" rel="stylesheet">
+
+  <!-- Material Symbols Outlined -->
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet">
+
+  <!-- Three.js for 3D Hero Spatial Animation -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+
+  <!-- Main Luxury Stylesheet -->
+  <link rel="stylesheet" href="/css/app.css">
+</head>
+<body>
+  <a class="skip" href="#main">Skip to content</a>
+
+  <!-- Header with Brand Logo -->
+  <header class="app-header">
+    <div class="header-inner">
+      <a class="brand" href="#home" aria-label="Grand Horizon Home">
+        <img src="/favicon.svg" alt="Grand Horizon Logo" class="brand-logo" width="38" height="38">
+        <div class="brand-text">
+          <span class="brand-title">Grand Horizon</span>
+          <span class="brand-subtitle">Resort &amp; Hotel Management</span>
+        </div>
+      </a>
+      <nav id="nav" aria-label="Main navigation"></nav>
+    </div>
+  </header>
+
+  <!-- Main Content View -->
+  <main id="main" tabindex="-1"></main>
+
+  <!-- Cookies Consent Banner -->
+  <aside id="cookie-banner" class="cookie-banner" role="region" aria-label="Cookie consent banner">
+    <div class="cookie-inner">
+      <div class="cookie-text">
+        <span class="material-symbols-outlined cookie-icon">cookie</span>
+        <p>Grand Horizon uses strictly necessary privacy-preserving session tokens for secure guest reservations, service requests, and checkout billing. No tracking cookies are used.</p>
+      </div>
+      <div class="cookie-actions">
+        <button type="button" id="cookie-accept" class="btn-cookie-accept">Accept &amp; Continue</button>
+      </div>
+    </div>
+  </aside>
+
+  <!-- Grand Horizon Luxury Footer on Every Page -->
+  <footer class="app-footer">
+    <div class="footer-inner">
+      <div class="footer-grid">
+        <div class="footer-col brand-col">
+          <a class="footer-brand" href="#home" aria-label="Grand Horizon Home">
+            <img src="/favicon.svg" alt="Grand Horizon Logo" class="footer-brand-logo" width="34" height="34">
+            <div class="brand-text">
+              <span class="footer-brand-title">Grand Horizon</span>
+              <span class="footer-brand-subtitle">Luxury Hotel &amp; Resort</span>
+            </div>
+          </a>
+          <p class="footer-desc">An idyllic coastal sanctuary curating world-class luxury, bespoke hospitality, and effortless room reservations with unified checkout billing.</p>
+          <div class="footer-accolades">
+            <div class="accolade-item">
+              <span class="accolade-badge">Forbes Travel Guide</span>
+              <span class="accolade-text">Five-Star Award 2026</span>
+            </div>
+            <span class="accolade-sep">•</span>
+            <div class="accolade-item">
+              <span class="accolade-badge">Condé Nast Traveler</span>
+              <span class="accolade-text">Gold List Top Resort</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="footer-col nav-col">
+          <h4 class="footer-heading">Navigation</h4>
+          <nav class="footer-nav">
+            <a href="#home">Home</a>
+            <a href="#rooms">Find Rooms</a>
+            <a href="#register">Register</a>
+            <a href="#login">Sign In</a>
+            <a href="#privacy">Privacy Policy</a>
+            <a href="#terms">Terms &amp; Conditions</a>
+          </nav>
+        </div>
+
+        <div class="footer-col contact-col">
+          <h4 class="footer-heading">Concierge &amp; Inquiries</h4>
+          <div class="contact-info">
+            <p><span class="material-symbols-outlined icon">location_on</span> 100 Emerald Bay Way, Coastal Haven</p>
+            <p><span class="material-symbols-outlined icon">call</span> +1 (800) 555-4674</p>
+            <p><a href="mailto:bainarybandits768@gmail.com" class="footer-contact-link"><span class="material-symbols-outlined icon">mail</span> bainarybandits768@gmail.com</a></p>
+            <p><span class="material-symbols-outlined icon">schedule</span> Front Desk 24/7 · Check-in 14:00</p>
+          </div>
+        </div>
+
+        <div class="footer-col journal-col">
+          <h4 class="footer-heading">The Horizon Journal</h4>
+          <p class="journal-desc">Receive seasonal invites, private villa openings, and bespoke retreat curation directly to your inbox.</p>
+          <form id="newsletter-form" class="newsletter-form">
+            <input type="text" name="_hp" style="display:none!important" tabindex="-1" autocomplete="off" aria-hidden="true">
+            <div class="newsletter-input-group">
+              <input type="email" name="email" placeholder="Your email address" required autocomplete="email" aria-label="Email for newsletter">
+              <button type="submit" class="btn-subscribe">Subscribe</button>
+            </div>
+          </form>
+        </div>
+      </div>
+
+      <div class="footer-bottom">
+        <p class="copyright">© 2026 Grand Horizon Resort &amp; Hotel Management. All rights reserved.</p>
+        <div class="footer-bottom-links">
+          <a href="#privacy">Privacy Policy</a>
+          <span class="sep">•</span>
+          <a href="#terms">Terms &amp; Conditions</a>
+          <span class="sep">•</span>
+          <a href="#rooms">Room Inventory</a>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <div id="notices" role="status" aria-live="polite"></div>
+  <dialog id="dialog" aria-labelledby="dialog-title"></dialog>
+  <script type="module" src="/js/app.js"></script>
+</body>
+</html>
