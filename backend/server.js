@@ -161,7 +161,10 @@ route('delete','/rooms/:id',staff,async(req,res)=>{
  });res.json({ok:true});
 });
 route('get','/bookings',signed,async(req,res)=>{
- res.json((await pool.query('SELECT b.*,b.check_in::text,b.check_out::text,r.room_number FROM bookings b JOIN rooms r ON r.id=b.room_id WHERE '+(req.user.role==='admin'?'b.admin_id':'b.user_id')+'=$1 ORDER BY b.id DESC',[req.user.role==='admin'?owner(req):req.user.id])).rows);
+ res.json((await pool.query(`SELECT b.*,b.check_in::text,b.check_out::text,r.room_number,
+  COALESCE((SELECT sum(total_amount) FROM guest_requests WHERE booking_id=b.id AND status='completed'),0)::numeric(12,2) AS orders_total,
+  (b.total_amount + COALESCE((SELECT sum(total_amount) FROM guest_requests WHERE booking_id=b.id AND status='completed'),0))::numeric(12,2) AS grand_total
+  FROM bookings b JOIN rooms r ON r.id=b.room_id WHERE `+(req.user.role==='admin'?'b.admin_id':'b.user_id')+'=$1 ORDER BY b.id DESC',[req.user.role==='admin'?owner(req):req.user.id])).rows);
 });
 route('post','/bookings',signed,async(req,res)=>{
  check(req.user.role==='customer','Only guests can book rooms',403);
