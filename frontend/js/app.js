@@ -22,9 +22,30 @@ function escapeHtml(str) {
 }
 
 // ============================================================================
-// 1. NAVIGATION & VIEW ROUTING
+// 1. NAVIGATION & VIEW ROUTING (Separated Dashboards & Login Access Guards)
 // ============================================================================
 window.showView = function(viewName) {
+    const user = Store.getCurrentUser();
+
+    // Access Guards: Restrict Guest & Staff Dashboards strictly to authenticated sessions
+    if (viewName === 'customer') {
+        if (!user) {
+            showLoginAlert('🔒 Guest Reservations Portal requires sign-in. Please log in with your credentials or click demo account below.', 'info');
+            viewName = 'login';
+        } else if (user.role === 'admin') {
+            // Hotel staff redirected to staff operations console
+            viewName = 'admin';
+        }
+    } else if (viewName === 'admin') {
+        if (!user) {
+            showLoginAlert('🔒 Staff Command Center requires administrator sign-in. Please log in with your staff account.', 'info');
+            viewName = 'login';
+        } else if (user.role !== 'admin') {
+            alert('Access Denied: This console is strictly reserved for Hotel Staff & Administrators.');
+            viewName = 'customer';
+        }
+    }
+
     document.querySelectorAll('.spa-view').forEach(v => v.classList.remove('active-view'));
     document.querySelectorAll('.nav-tab-btn').forEach(b => b.classList.remove('active-tab'));
 
@@ -45,32 +66,66 @@ window.showView = function(viewName) {
 };
 
 // ============================================================================
-// 2. AUTH STATE & HEADER UI
+// 2. AUTH STATE & HEADER UI (Separated Guest vs Staff Navigation)
 // ============================================================================
 export function updateAuthHeader() {
     const user = Store.getCurrentUser();
     const controls = document.getElementById('header-user-controls');
-    if (!controls) return;
+    const customerNavItem = document.getElementById('nav-item-customer');
+    const adminNavItem = document.getElementById('nav-item-admin');
+    const heroSecBtn = document.getElementById('hero-secondary-btn');
 
     if (user) {
-        controls.innerHTML = `
-            <span style="font-size: 0.88rem; font-weight: 600; color: var(--teal-900);">
-                ${user.role === 'admin' ? '👑' : '🧳'} ${escapeHtml(user.full_name)}
-            </span>
-            <button type="button" class="btn-secondary" id="spa-logout-btn" style="padding: 0.4rem 0.8rem; font-size: 0.82rem;">
-                Sign Out
-            </button>
-        `;
-        document.getElementById('spa-logout-btn')?.addEventListener('click', () => {
-            Store.logout();
-            updateAuthHeader();
-            showView('home');
-        });
+        // Authenticated Session: Show only the matching dashboard
+        if (user.role === 'admin') {
+            customerNavItem?.classList.add('hidden');
+            adminNavItem?.classList.remove('hidden');
+            if (heroSecBtn) {
+                heroSecBtn.textContent = '👑 Staff Console';
+                heroSecBtn.onclick = () => showView('admin');
+            }
+        } else {
+            // Customer / Guest Session
+            customerNavItem?.classList.remove('hidden');
+            adminNavItem?.classList.add('hidden');
+            if (heroSecBtn) {
+                heroSecBtn.textContent = '🧳 Guest Portal';
+                heroSecBtn.onclick = () => showView('customer');
+            }
+        }
+
+        if (controls) {
+            controls.innerHTML = `
+                <span class="user-badge-chip">
+                    ${user.role === 'admin' ? '👑' : '🧳'} ${escapeHtml(user.full_name)}
+                    ${user.role === 'admin' && user.hotel_name ? `<small>(${escapeHtml(user.hotel_name)})</small>` : ''}
+                </span>
+                <button type="button" class="btn-secondary" id="spa-logout-btn" style="padding: 0.4rem 0.8rem; font-size: 0.82rem;">
+                    Sign Out
+                </button>
+            `;
+            document.getElementById('spa-logout-btn')?.addEventListener('click', () => {
+                Store.logout();
+                updateAuthHeader();
+                showView('home');
+            });
+        }
     } else {
-        controls.innerHTML = `
-            <button type="button" class="btn-secondary" onclick="showView('login')">Sign In</button>
-            <button type="button" class="btn-primary" onclick="showView('register')">Register</button>
-        `;
+        // Unauthenticated: Strictly hide both Guest & Staff Dashboards (Home is common)
+        customerNavItem?.classList.add('hidden');
+        adminNavItem?.classList.add('hidden');
+
+        if (heroSecBtn) {
+            heroSecBtn.textContent = 'Demo Accounts';
+            heroSecBtn.onclick = () => showView('login');
+        }
+
+        if (controls) {
+            controls.innerHTML = `
+                <button type="button" class="btn-secondary" onclick="showView('login')">Sign In</button>
+                <button type="button" class="btn-primary" onclick="showView('register')">Register</button>
+            `;
+        }
     }
 }
 
@@ -297,6 +352,20 @@ async function loadHomeRooms() {
     if (!container) return;
     const rooms = await Api.getRooms({ status: 'available' });
     
+    if (!rooms || rooms.length === 0) {
+        container.innerHTML = `
+            <div class="empty-state-card-clean" style="grid-column: 1 / -1; padding: 2.5rem 2rem; text-align: center; background: #ffffff; border: 1px dashed var(--teal-200); border-radius: var(--radius-md);">
+                <div style="font-size: 2.2rem; margin-bottom: 0.5rem;">🛎️</div>
+                <h3 style="font-size: 1.15rem; color: var(--teal-900); font-weight: 700; margin-bottom: 0.35rem;">Inventory Ready (Currently 0 Rooms)</h3>
+                <p style="color: var(--text-muted); font-size: 0.9rem; max-width: 480px; margin: 0 auto 1.25rem;">
+                    All demo accounts start clean with zero mock inventory. Sign in to the Staff Console with demo credentials to add your first real accommodation to PostgreSQL.
+                </p>
+                <button type="button" class="btn-primary" onclick="showView('login')">Open Staff Console</button>
+            </div>
+        `;
+        return;
+    }
+
     // Cache rooms
     rooms.forEach(r => window._roomsCache.set(r.id, r));
 
@@ -672,10 +741,20 @@ addForm?.addEventListener('submit', async (e) => {
 });
 
 // ============================================================================
-// 8. STARTUP & ROUTING INITIALIZATION
+// 8. STARTUP, SPLASH SCREEN & ROUTING INITIALIZATION
 // ============================================================================
+function dismissSplashScreen() {
+    const splash = document.getElementById('splash-screen');
+    if (splash && !splash.classList.contains('fade-out')) {
+        splash.classList.add('fade-out');
+        setTimeout(() => splash.remove(), 650);
+    }
+}
+
 document.addEventListener('DOMContentLoaded', async () => {
     updateAuthHeader();
+
+    const splashStatus = document.getElementById('splash-status-text');
 
     // Health check with PostgreSQL backend
     const dbOk = await Api.healthCheck();
@@ -686,8 +765,20 @@ document.addEventListener('DOMContentLoaded', async () => {
             : `<span class="status-dot" style="background:#ef4444;"></span> Server Offline`;
     }
 
+    if (splashStatus) {
+        splashStatus.textContent = dbOk ? 'PostgreSQL Active (hms_db)' : 'Connecting to Server...';
+    }
+
     const initialHash = window.location.hash.replace('#', '') || 'home';
     showView(initialHash);
+
+    // Smooth luxury fade-out for splash screen
+    setTimeout(dismissSplashScreen, 950);
+});
+
+// Fallback splash dismissal
+window.addEventListener('load', () => {
+    setTimeout(dismissSplashScreen, 1200);
 });
 
 window.addEventListener('hashchange', () => {

@@ -170,6 +170,25 @@ header {
   gap: 0.75rem;
 }
 
+.user-badge-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: var(--teal-900);
+  background: var(--teal-50);
+  border: 1px solid var(--teal-200);
+  padding: 0.35rem 0.75rem;
+  border-radius: var(--radius-pill);
+}
+
+.user-badge-chip small {
+  color: var(--teal-700);
+  font-weight: 500;
+  font-size: 0.78rem;
+}
+
 /* ==========================================================================
    BUTTONS & ACTIONS
    ========================================================================== */
@@ -1227,6 +1246,151 @@ footer {
   background: #fee2e2 !important;
   color: #b91c1c !important;
   border: 1px solid #fca5a5;
+}
+
+/* ==========================================================================
+   SPLASH SCREEN (Grand Horizon Luxury Welcome)
+   ========================================================================== */
+.splash-screen {
+  position: fixed;
+  inset: 0;
+  z-index: 99999;
+  background: radial-gradient(circle at 50% 38%, #ffffff 0%, #f0fdfa 55%, #e0f2fe 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  transition: opacity 0.6s cubic-bezier(0.16, 1, 0.3, 1), visibility 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+  overflow: hidden;
+}
+
+.splash-screen.fade-out {
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+}
+
+.splash-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding: 2.5rem 3rem;
+  background: rgba(255, 255, 255, 0.94);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(204, 251, 241, 0.9);
+  border-radius: var(--radius-lg);
+  box-shadow: 0 25px 50px -12px rgba(15, 118, 110, 0.16), 0 0 0 1px rgba(226, 232, 240, 0.7);
+  max-width: 440px;
+  width: 90%;
+  animation: splashCardEnter 0.7s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes splashCardEnter {
+  0% {
+    opacity: 0;
+    transform: translateY(18px) scale(0.96);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.splash-logo-wrap {
+  position: relative;
+  margin-bottom: 1.25rem;
+}
+
+.splash-logo-glow {
+  position: absolute;
+  inset: -14px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(45, 212, 191, 0.45) 0%, rgba(56, 189, 248, 0) 70%);
+  filter: blur(14px);
+  animation: splashPulse 2.4s ease-in-out infinite;
+}
+
+@keyframes splashPulse {
+  0%, 100% {
+    transform: scale(1);
+    opacity: 0.6;
+  }
+  50% {
+    transform: scale(1.2);
+    opacity: 0.95;
+  }
+}
+
+.splash-logo-badge {
+  position: relative;
+  width: 76px;
+  height: 76px;
+  border-radius: 22px;
+  background: linear-gradient(135deg, var(--teal-700), var(--sky-600));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 1.9rem;
+  font-weight: 800;
+  color: #ffffff;
+  letter-spacing: -1px;
+  box-shadow: 0 12px 24px -6px rgba(15, 118, 110, 0.35);
+}
+
+.splash-title {
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 1.75rem;
+  font-weight: 800;
+  color: var(--teal-900);
+  letter-spacing: -0.02em;
+  margin-bottom: 0.3rem;
+}
+
+.splash-subtitle {
+  font-size: 0.9rem;
+  color: var(--text-muted);
+  font-weight: 500;
+  margin-bottom: 1.75rem;
+}
+
+.splash-loader-bar {
+  width: 100%;
+  height: 6px;
+  background: var(--teal-100);
+  border-radius: var(--radius-pill);
+  overflow: hidden;
+  position: relative;
+  margin-bottom: 1rem;
+}
+
+.splash-loader-progress {
+  height: 100%;
+  width: 45%;
+  background: linear-gradient(90deg, var(--teal-600), var(--sky-500));
+  border-radius: var(--radius-pill);
+  animation: splashProgress 1.4s infinite ease-in-out;
+}
+
+@keyframes splashProgress {
+  0% {
+    transform: translateX(-100%);
+  }
+  50% {
+    transform: translateX(110%);
+  }
+  100% {
+    transform: translateX(300%);
+  }
+}
+
+.splash-status-text {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--teal-700);
+  letter-spacing: 0.2px;
 }
 
 

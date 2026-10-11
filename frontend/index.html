@@ -11,6 +11,22 @@
 
 <body>
 
+    <!-- Luxury Animated Splash Screen -->
+    <div id="splash-screen" class="splash-screen" role="status" aria-live="polite" aria-label="Loading Grand Horizon Hotel Portal">
+        <div class="splash-card">
+            <div class="splash-logo-wrap">
+                <div class="splash-logo-glow"></div>
+                <div class="splash-logo-badge">GH</div>
+            </div>
+            <h1 class="splash-title">Grand Horizon</h1>
+            <p class="splash-subtitle">Hospitality Management Portal</p>
+            <div class="splash-loader-bar">
+                <div class="splash-loader-progress"></div>
+            </div>
+            <div class="splash-status-text" id="splash-status-text">Synchronizing PostgreSQL Engine...</div>
+        </div>
+    </div>
+
     <!-- Unified Header Navigation -->
     <header>
         <nav class="navbar">
@@ -27,8 +43,8 @@
             <ul class="nav-links">
                 <li><button type="button" class="nav-tab-btn active-tab" id="tab-home" onclick="showView('home')">Home</button></li>
                 <li><button type="button" class="nav-tab-btn" id="tab-rooms" onclick="showView('rooms')">Rooms & Suites</button></li>
-                <li><button type="button" class="nav-tab-btn" id="tab-customer" onclick="showView('customer')">Guest Portal</button></li>
-                <li><button type="button" class="nav-tab-btn" id="tab-admin" onclick="showView('admin')">Staff Console</button></li>
+                <li id="nav-item-customer" class="hidden"><button type="button" class="nav-tab-btn" id="tab-customer" onclick="showView('customer')">Guest Portal</button></li>
+                <li id="nav-item-admin" class="hidden"><button type="button" class="nav-tab-btn" id="tab-admin" onclick="showView('admin')">Staff Console</button></li>
             </ul>
 
             <div class="user-controls" id="header-user-controls">
@@ -57,7 +73,7 @@
                             <button type="button" class="btn-primary" style="padding: 0.8rem 1.6rem; font-size: 1rem;" onclick="showView('rooms')">
                                 Explore Rooms
                             </button>
-                            <button type="button" class="btn-secondary" style="padding: 0.8rem 1.4rem;" onclick="showView('login')">
+                            <button type="button" class="btn-secondary" id="hero-secondary-btn" style="padding: 0.8rem 1.4rem;" onclick="showView('login')">
                                 Demo Accounts
                             </button>
                         </div>
