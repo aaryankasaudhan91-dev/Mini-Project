@@ -1393,4 +1393,592 @@ footer {
   letter-spacing: 0.2px;
 }
 
+/* ==========================================================================
+   HONEYPOT BOT/SPAM PROTECTION
+   ========================================================================== */
+.hidden-honeypot {
+  position: absolute !important;
+  left: -9999px !important;
+  width: 1px !important;
+  height: 1px !important;
+  opacity: 0 !important;
+  pointer-events: none !important;
+  display: none !important;
+}
 
+/* ==========================================================================
+   HERO PRIMARY CALL TO ACTION
+   ========================================================================== */
+.btn-hero-cta {
+  background: linear-gradient(135deg, var(--teal-600), var(--teal-700)) !important;
+  box-shadow: 0 4px 14px rgba(15, 118, 110, 0.35) !important;
+  font-weight: 700 !important;
+}
+
+.btn-hero-cta:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 22px rgba(15, 118, 110, 0.45) !important;
+}
+
+/* ==========================================================================
+   LEGAL PAGES (Privacy Policy & Terms)
+   ========================================================================== */
+.legal-card-clean {
+  background: #ffffff;
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-md);
+  padding: 3rem;
+  max-width: 900px;
+  margin: 2rem auto;
+}
+
+.legal-header {
+  margin-bottom: 2rem;
+  padding-bottom: 1.5rem;
+  border-bottom: 1px solid var(--border-light);
+}
+
+.legal-header h1 {
+  font-size: 2.2rem;
+  color: var(--teal-900);
+  margin-top: 0.5rem;
+}
+
+.legal-body h2 {
+  font-size: 1.25rem;
+  color: var(--teal-800);
+  margin: 1.75rem 0 0.5rem;
+  font-weight: 700;
+}
+
+.legal-body p,
+.legal-body li {
+  color: var(--text-main);
+  line-height: 1.7;
+  font-size: 0.95rem;
+}
+
+.legal-body ul {
+  margin-left: 1.5rem;
+  margin-bottom: 1rem;
+}
+
+.legal-body li {
+  margin-bottom: 0.35rem;
+}
+
+.legal-footer {
+  margin-top: 2.5rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid var(--border-light);
+  display: flex;
+  gap: 1rem;
+}
+
+/* ==========================================================================
+   MODERN MULTI-COLUMN FOOTER
+   ========================================================================== */
+.footer-master {
+  background: #0f172a;
+  color: #cbd5e1;
+  margin-top: auto;
+  border-top: 1px solid #1e293b;
+}
+
+.footer-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 4rem 1.5rem 3rem;
+  display: grid;
+  grid-template-columns: 2fr 1fr 1fr 1fr;
+  gap: 3rem;
+}
+
+.footer-col h4 {
+  color: #ffffff;
+  font-size: 1rem;
+  font-weight: 700;
+  margin-bottom: 1.25rem;
+  font-family: 'Plus Jakarta Sans', sans-serif;
+}
+
+.footer-col ul {
+  list-style: none;
+}
+
+.footer-col li {
+  margin-bottom: 0.65rem;
+}
+
+.footer-col a {
+  color: #94a3b8;
+  font-size: 0.9rem;
+  transition: color 0.2s;
+}
+
+.footer-col a:hover {
+  color: #2dd4bf;
+  text-decoration: underline;
+}
+
+.footer-desc {
+  color: #94a3b8;
+  font-size: 0.9rem;
+  line-height: 1.6;
+  margin-bottom: 1.25rem;
+}
+
+.footer-badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.footer-pill {
+  font-size: 0.75rem;
+  background: #1e293b;
+  color: #5eead4;
+  padding: 0.3rem 0.65rem;
+  border-radius: var(--radius-pill);
+  border: 1px solid rgba(45, 212, 191, 0.2);
+  font-weight: 600;
+}
+
+.footer-bottom {
+  border-top: 1px solid #1e293b;
+  background: #090d16;
+  padding: 1.25rem 1.5rem;
+}
+
+.footer-bottom-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.85rem;
+  color: #64748b;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.footer-sub-links a {
+  color: #94a3b8;
+}
+
+.footer-sub-links a:hover {
+  color: #2dd4bf;
+}
+
+/* ==========================================================================
+   COOKIE CONSENT BANNER
+   ========================================================================== */
+.cookie-banner {
+  position: fixed;
+  bottom: 1.5rem;
+  left: 1.5rem;
+  right: 1.5rem;
+  max-width: 680px;
+  margin: 0 auto;
+  z-index: 9999;
+  background: rgba(255, 255, 255, 0.98);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid var(--teal-200);
+  border-radius: var(--radius-md);
+  box-shadow: 0 16px 36px -8px rgba(15, 23, 42, 0.18), 0 0 0 1px rgba(13, 148, 136, 0.1);
+  padding: 1.25rem 1.5rem;
+  animation: cookieSlideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes cookieSlideUp {
+  from { transform: translateY(40px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+
+.cookie-banner-content {
+  display: flex;
+  align-items: center;
+  gap: 1.25rem;
+  flex-wrap: wrap;
+}
+
+.cookie-banner-icon {
+  font-size: 2rem;
+}
+
+.cookie-banner-text {
+  flex: 1;
+  min-width: 240px;
+}
+
+.cookie-banner-text strong {
+  display: block;
+  color: var(--teal-900);
+  font-size: 0.95rem;
+  margin-bottom: 0.2rem;
+}
+
+.cookie-banner-text p {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  line-height: 1.4;
+  margin: 0;
+}
+
+.cookie-banner-text a {
+  color: var(--teal-700);
+  text-decoration: underline;
+  font-weight: 600;
+}
+
+.cookie-banner-actions {
+  display: flex;
+  gap: 0.5rem;
+}
+
+/* ==========================================================================
+   COLOR CONTRAST & ACCESSIBILITY OPTIMIZATION (WCAG AA 4.5:1+)
+   ========================================================================== */
+.text-muted {
+  color: #475569 !important;
+}
+
+p {
+  color: #1e293b;
+}
+
+/* Form Validation Interactive Hints */
+input:invalid:focus {
+  border-color: #ef4444 !important;
+  box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.15) !important;
+}
+
+input:valid:focus {
+  border-color: #0f766e !important;
+  box-shadow: 0 0 0 3px rgba(15, 118, 110, 0.15) !important;
+}
+
+/* ==========================================================================
+   MOBILE RESPONSIVENESS (Touch Targets >= 44px)
+   ========================================================================== */
+@media (max-width: 900px) {
+  .footer-container {
+    grid-template-columns: 1fr 1fr;
+    gap: 2rem;
+  }
+}
+
+@media (max-width: 680px) {
+  .navbar {
+    padding: 0.75rem 1rem;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+  }
+  .nav-links {
+    order: 3;
+    width: 100%;
+    justify-content: center;
+    overflow-x: auto;
+    padding-bottom: 0.25rem;
+  }
+  .nav-tab-btn {
+    padding: 0.5rem 0.75rem;
+    font-size: 0.85rem;
+    min-height: 44px;
+  }
+  .footer-container {
+    grid-template-columns: 1fr;
+    gap: 2rem;
+    padding: 2.5rem 1rem 2rem;
+  }
+  .legal-card-clean {
+    padding: 1.5rem 1rem;
+  }
+  .cookie-banner {
+    left: 0.75rem;
+    right: 0.75rem;
+    bottom: 0.75rem;
+    padding: 1rem;
+  }
+  .cookie-banner-actions {
+    width: 100%;
+    justify-content: flex-end;
+  }
+  .btn-primary, .btn-secondary {
+    min-height: 44px;
+  }
+}
+
+/* ==========================================================================
+   CUSTOM NOTIFICATION SYSTEM & TOASTS
+   ========================================================================== */
+.gh-toast-container {
+  position: fixed;
+  top: 1.25rem;
+  right: 1.25rem;
+  z-index: 9999;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  max-width: 420px;
+  width: calc(100% - 2.5rem);
+  pointer-events: none;
+}
+
+.gh-toast {
+  position: relative;
+  overflow: hidden;
+  pointer-events: auto;
+  display: flex;
+  align-items: flex-start;
+  gap: 0.85rem;
+  padding: 1rem 1.15rem;
+  background: rgba(255, 255, 255, 0.98);
+  backdrop-filter: blur(16px);
+  border-radius: var(--radius-md);
+  box-shadow: 0 12px 30px -8px rgba(15, 23, 42, 0.15), 0 4px 12px rgba(13, 148, 136, 0.08);
+  border: 1px solid var(--border-light);
+  transform-origin: top right;
+  animation: gh-toast-slide-in 0.32s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  transition: transform 0.25s ease, opacity 0.25s ease;
+}
+
+.gh-toast.gh-toast-leaving {
+  animation: gh-toast-slide-out 0.25s ease forwards;
+}
+
+@keyframes gh-toast-slide-in {
+  from {
+    opacity: 0;
+    transform: translateX(60px) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0) scale(1);
+  }
+}
+
+@keyframes gh-toast-slide-out {
+  from {
+    opacity: 1;
+    transform: translateX(0) scale(1);
+  }
+  to {
+    opacity: 0;
+    transform: translateX(80px) scale(0.92);
+  }
+}
+
+.gh-toast-icon-wrap {
+  flex-shrink: 0;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1rem;
+  font-weight: 700;
+}
+
+.gh-toast-body {
+  flex: 1;
+  min-width: 0;
+}
+
+.gh-toast-title {
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 0.92rem;
+  font-weight: 700;
+  color: var(--teal-900);
+  margin-bottom: 0.2rem;
+  line-height: 1.25;
+}
+
+.gh-toast-message {
+  font-size: 0.85rem;
+  color: #334155;
+  line-height: 1.45;
+  word-break: break-word;
+}
+
+.gh-toast-close {
+  flex-shrink: 0;
+  background: transparent;
+  border: none;
+  font-size: 1.25rem;
+  line-height: 1;
+  color: #94a3b8;
+  cursor: pointer;
+  padding: 0.1rem;
+  margin-left: 0.25rem;
+  border-radius: 4px;
+  transition: color 0.15s ease, transform 0.15s ease;
+}
+
+.gh-toast-close:hover {
+  color: var(--text-main);
+  transform: scale(1.15);
+}
+
+.gh-toast-progress {
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  height: 3px;
+  width: 100%;
+  transform-origin: left;
+  animation: gh-progress-shrink linear forwards;
+}
+
+@keyframes gh-progress-shrink {
+  from { transform: scaleX(1); }
+  to { transform: scaleX(0); }
+}
+
+/* Toast Varieties */
+.gh-toast-success {
+  border-left: 4px solid var(--teal-600);
+}
+.gh-toast-success .gh-toast-icon-wrap {
+  background: var(--teal-100);
+  color: var(--teal-800);
+}
+.gh-toast-success .gh-toast-progress {
+  background: var(--teal-500);
+}
+
+.gh-toast-error {
+  border-left: 4px solid #ef4444;
+}
+.gh-toast-error .gh-toast-icon-wrap {
+  background: #fee2e2;
+  color: #b91c1c;
+}
+.gh-toast-error .gh-toast-title {
+  color: #991b1b;
+}
+.gh-toast-error .gh-toast-progress {
+  background: #ef4444;
+}
+
+.gh-toast-warning {
+  border-left: 4px solid #f59e0b;
+}
+.gh-toast-warning .gh-toast-icon-wrap {
+  background: #fef3c7;
+  color: #b45309;
+}
+.gh-toast-warning .gh-toast-title {
+  color: #92400e;
+}
+.gh-toast-warning .gh-toast-progress {
+  background: #f59e0b;
+}
+
+.gh-toast-info {
+  border-left: 4px solid var(--sky-600);
+}
+.gh-toast-info .gh-toast-icon-wrap {
+  background: var(--sky-100);
+  color: var(--sky-700);
+}
+.gh-toast-info .gh-toast-progress {
+  background: var(--sky-600);
+}
+
+/* Custom Confirmation Modal */
+.gh-confirm-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 10000;
+  background: rgba(15, 23, 42, 0.45);
+  backdrop-filter: blur(6px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1.25rem;
+  animation: gh-fade-in 0.2s ease forwards;
+}
+
+.gh-confirm-backdrop.gh-fade-out {
+  animation: gh-fade-out 0.2s ease forwards;
+}
+
+@keyframes gh-fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes gh-fade-out {
+  from { opacity: 1; }
+  to { opacity: 0; }
+}
+
+.gh-confirm-modal {
+  background: #ffffff;
+  border-radius: var(--radius-lg);
+  box-shadow: 0 25px 50px -12px rgba(15, 23, 42, 0.25);
+  border: 1px solid var(--teal-200);
+  max-width: 440px;
+  width: 100%;
+  padding: 2rem;
+  text-align: center;
+  animation: gh-modal-pop 0.25s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes gh-modal-pop {
+  from {
+    opacity: 0;
+    transform: scale(0.92);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.gh-confirm-icon {
+  font-size: 2.5rem;
+  margin-bottom: 0.75rem;
+}
+
+.gh-confirm-title {
+  font-size: 1.25rem;
+  font-weight: 800;
+  color: var(--teal-900);
+  margin-bottom: 0.5rem;
+}
+
+.gh-confirm-message {
+  font-size: 0.92rem;
+  color: #475569;
+  line-height: 1.5;
+  margin-bottom: 1.75rem;
+}
+
+.gh-confirm-actions {
+  display: flex;
+  justify-content: center;
+  gap: 0.75rem;
+}
+
+.gh-confirm-actions button {
+  flex: 1;
+  padding: 0.75rem 1.2rem;
+  font-size: 0.92rem;
+  min-height: 44px;
+}
+
+@media (max-width: 680px) {
+  .gh-toast-container {
+    top: auto;
+    bottom: 1rem;
+    right: 0.75rem;
+    left: 0.75rem;
+    width: auto;
+    max-width: none;
+  }
+}

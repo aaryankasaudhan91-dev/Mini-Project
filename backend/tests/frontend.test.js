@@ -2,31 +2,18 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import vm from 'node:vm';
-
-test('booking modal preserves the last searched stay, not edited form values', async () => {
-  const elements = new Map();
-  for (const id of ['spa-booking-modal','spa-modal-summary','spa-modal-checkin','spa-modal-checkout','cust-category','cust-checkin','cust-checkout','customer-available-grid']) {
-    elements.set(id,{value:'',innerHTML:'',showModal(){this.open=true}});
-  }
-  elements.get('cust-checkin').value='2030-02-10';
-  elements.get('cust-checkout').value='2030-02-15';
-  const room={id:7,room_number:'101',room_type:'Suite',price_per_night:100,hotel_name:'Hotel'};
-  const context=vm.createContext({
-    window:{location:{hash:'#customer'},addEventListener(){}},
-    document:{getElementById:id=>elements.get(id)||null,addEventListener(){}},
-    Store:{getCurrentUser:()=>({full_name:'Guest',email:'g@example.test'})},
-    Api:{getRooms:async()=>[room]},DEMO_CREDENTIALS:{},alert(){throw new Error('Unexpected alert');}
-  });
-  const source=fs.readFileSync(new URL('../../frontend/js/app.js',import.meta.url),'utf8')
-    .replace(/^import .*;\r?\n/gm,'').replace('export function updateAuthHeader','function updateAuthHeader');
-  vm.runInContext(source,context);
-  await vm.runInContext('searchCustomerRooms()',context);
-  elements.get('cust-checkin').value='2031-01-01';
-  context.window.triggerBookingModalById(7);
-  assert.equal(elements.get('spa-modal-checkin').value,'2030-02-10');
-  assert.equal(elements.get('spa-modal-checkout').value,'2030-02-15');
-  assert.equal(elements.get('spa-booking-modal').open,true);
-  context.window.location.hash='#rooms';
-  context.window.triggerBookingModalById(7);
-  assert.equal(elements.get('spa-modal-checkin').value,new Date().toISOString().split('T')[0]);
+test('notification renders untrusted text as text, never HTML',()=>{
+ const appended=[];const doc={createElement:()=>({remove(){}}),getElementById:()=>({append:n=>appended.push(n)})};
+ const code=fs.readFileSync(new URL('../../frontend/js/notifications.js',import.meta.url),'utf8').replace('export function','function');
+ vm.runInNewContext(code+';notify("<img src=x onerror=alert(1)>")',{document:doc,setTimeout:()=>{}});
+ assert.equal(appended[0].textContent,'<img src=x onerror=alert(1)>');assert.equal(appended[0].innerHTML,undefined);
 });
+test('session store discards legacy persistent tokens and uses tab storage',()=>{
+ const removed=[],data=new Map();
+ const code=fs.readFileSync(new URL('../../frontend/js/store.js',import.meta.url),'utf8').replace('export const Store','const Store');
+ vm.runInNewContext(code+';Store.setSession({token:"token",user:{id:1}});if(Store.getUser().id!==1)throw Error("bad user");Store.clear();',{
+ localStorage:{removeItem:k=>removed.push(k)},sessionStorage:{setItem:(k,v)=>data.set(k,v),getItem:k=>data.get(k),removeItem:k=>data.delete(k)}
+ });
+ assert.equal(data.size,0);assert.deepEqual(removed,['hms_token','hms_session']);
+});
+

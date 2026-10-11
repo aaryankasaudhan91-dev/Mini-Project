@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>404 Page Not Found | Grand Horizon Hotel</title>
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+    <style>
+        :root {
+            --teal-900: #134e4a;
+            --teal-700: #0f766e;
+            --teal-600: #0d9488;
+            --text-muted: #64748b;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: 'Inter', system-ui, -apple-system, sans-serif;
+            background: radial-gradient(circle at 50% 40%, #ffffff 0%, #f0fdfa 60%, #e0f2fe 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 1.5rem;
+            color: #0f172a;
+        }
+        .card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            border: 1px solid #ccfbf1;
+            box-shadow: 0 20px 40px -15px rgba(15, 118, 110, 0.15);
+            border-radius: 18px;
+            padding: 3rem 2.5rem;
+            max-width: 520px;
+            width: 100%;
+            text-align: center;
+        }
+        .badge {
+            display: inline-block;
+            font-size: 3.5rem;
+            margin-bottom: 0.5rem;
+        }
+        h1 {
+            font-size: 2.2rem;
+            font-weight: 800;
+            color: var(--teal-900);
+            margin-bottom: 0.5rem;
+            letter-spacing: -0.02em;
+        }
+        p {
+            color: var(--text-muted);
+            font-size: 1rem;
+            line-height: 1.6;
+            margin-bottom: 2rem;
+        }
+        .btn {
+            display: inline-block;
+            background: linear-gradient(135deg, var(--teal-600), var(--teal-700));
+            color: #ffffff;
+            font-weight: 700;
+            padding: 0.85rem 1.75rem;
+            border-radius: 8px;
+            text-decoration: none;
+            transition: transform 0.2s, box-shadow 0.2s;
+            box-shadow: 0 4px 12px rgba(15, 118, 110, 0.25);
+        }
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 18px rgba(15, 118, 110, 0.35);
+        }
+    </style>
+</head>
+<body>
+    <div class="card">
+        <div class="badge">🏝️</div>
+        <h1>Suite Not Found (404)</h1>
+        <p>The page or accommodation you are searching for does not exist or has been relocated to another corridor.</p>
+        <a href="/" class="btn">Return to Grand Horizon Home</a>
+    </div>
+</body>
+</html>

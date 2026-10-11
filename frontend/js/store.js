@@ -1,45 +1,9 @@
-// frontend/js/store.js
-// Client Session & Auth Store (Zero Mock Data — 100% Real PostgreSQL Backend)
-
-export const DEMO_CREDENTIALS = {
-  admin: {
-    email: 'admin@horizon.com',
-    password: 'admin123'
-  },
-  customer: {
-    email: 'customer@horizon.com',
-    password: 'guest123'
-  }
-};
-
-export const Store = {
-  getToken() {
-    return localStorage.getItem('hms_token') || null;
-  },
-
-  setToken(token) {
-    if (token) {
-      localStorage.setItem('hms_token', token);
-    } else {
-      localStorage.removeItem('hms_token');
-    }
-  },
-
-  getCurrentUser() {
-    const raw = localStorage.getItem('hms_session');
-    return raw ? JSON.parse(raw) : null;
-  },
-
-  setCurrentUser(user) {
-    if (user) {
-      localStorage.setItem('hms_session', JSON.stringify(user));
-    } else {
-      localStorage.removeItem('hms_session');
-    }
-  },
-
-  logout() {
-    localStorage.removeItem('hms_session');
-    localStorage.removeItem('hms_token');
-  }
+const TOKEN='hms_session_token',USER='hms_session_user';
+// Discard legacy persistent sessions; credentials are never persisted.
+localStorage.removeItem('hms_token');localStorage.removeItem('hms_session');
+export const Store={
+ getToken:()=>sessionStorage.getItem(TOKEN),
+ getUser:()=>{try{return JSON.parse(sessionStorage.getItem(USER)||'null');}catch{return null;}},
+ setSession:({token,user})=>{sessionStorage.setItem(TOKEN,token);sessionStorage.setItem(USER,JSON.stringify(user));},
+ clear:()=>{sessionStorage.removeItem(TOKEN);sessionStorage.removeItem(USER);}
 };

@@ -1,12 +1,9 @@
 -- backend/database/schema.sql
 -- Hotel Management System (HMS) Multi-Tenant Isolated Schema for PostgreSQL
 
-DROP TABLE IF EXISTS bookings CASCADE;
-DROP TABLE IF EXISTS rooms CASCADE;
-DROP TABLE IF EXISTS users CASCADE;
 
 -- 1. USERS TABLE (Multi-tenant with hotel_name)
-CREATE TABLE users (
+CREATE TABLE IF NOT EXISTS users (
     id SERIAL PRIMARY KEY,
     full_name VARCHAR(100) NOT NULL,
     email VARCHAR(100) UNIQUE NOT NULL,
@@ -17,7 +14,7 @@ CREATE TABLE users (
 );
 
 -- 2. ROOMS TABLE (Isolated per hotel/admin)
-CREATE TABLE rooms (
+CREATE TABLE IF NOT EXISTS rooms (
     id SERIAL PRIMARY KEY,
     admin_id INT REFERENCES users(id) ON DELETE CASCADE,
     hotel_name VARCHAR(150) NOT NULL,
@@ -33,7 +30,7 @@ CREATE TABLE rooms (
 );
 
 -- 3. BOOKINGS TABLE (Isolated per hotel/admin and customer)
-CREATE TABLE bookings (
+CREATE TABLE IF NOT EXISTS bookings (
     id SERIAL PRIMARY KEY,
     user_id INT REFERENCES users(id) ON DELETE CASCADE,
     admin_id INT REFERENCES users(id) ON DELETE CASCADE,

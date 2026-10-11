@@ -1,0 +1,51 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0f766e"/>
+      <stop offset="50%" stop-color="#115e59"/>
+      <stop offset="100%" stop-color="#0369a1"/>
+    </linearGradient>
+    <linearGradient id="accent" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#2dd4bf"/>
+      <stop offset="100%" stop-color="#38bdf8"/>
+    </linearGradient>
+  </defs>
+  
+  <!-- Background -->
+  <rect width="1200" height="630" fill="url(#bg)"/>
+  
+  <!-- Subtle decorative rings -->
+  <circle cx="1050" cy="120" r="320" fill="none" stroke="rgba(255,255,255,0.06)" stroke-width="2"/>
+  <circle cx="1050" cy="120" r="480" fill="none" stroke="rgba(255,255,255,0.04)" stroke-width="2"/>
+  <circle cx="150" cy="550" r="280" fill="none" stroke="rgba(255,255,255,0.05)" stroke-width="2"/>
+  
+  <!-- Brand Badge -->
+  <rect x="100" y="90" width="88" height="88" rx="24" fill="url(#accent)"/>
+  <text x="144" y="148" font-family="'Plus Jakarta Sans', system-ui, sans-serif" font-size="40" font-weight="800" fill="#0f766e" text-anchor="middle">GH</text>
+  
+  <!-- Header Text -->
+  <text x="215" y="132" font-family="'Plus Jakarta Sans', system-ui, sans-serif" font-size="28" font-weight="700" fill="#ccfbf1" letter-spacing="1">GRAND HORIZON</text>
+  <text x="215" y="162" font-family="'Inter', system-ui, sans-serif" font-size="16" font-weight="500" fill="#99f6e4">HOTEL &amp; LUXURY RESORTS</text>
+  
+  <!-- Hero Copy -->
+  <text x="100" y="290" font-family="'Plus Jakarta Sans', system-ui, sans-serif" font-size="56" font-weight="800" fill="#ffffff" letter-spacing="-1">
+    Tranquil Luxury.
+  </text>
+  <text x="100" y="360" font-family="'Plus Jakarta Sans', system-ui, sans-serif" font-size="56" font-weight="800" fill="#5eead4" letter-spacing="-1">
+    Effortless Hospitality.
+  </text>
+  
+  <text x="100" y="430" font-family="'Inter', system-ui, sans-serif" font-size="22" font-weight="400" fill="#e0f2fe">
+    Real-time reservation system with coastal suites, 24/7 concierge &amp; direct booking.
+  </text>
+  
+  <!-- Badges footer -->
+  <rect x="100" y="495" width="220" height="48" rx="24" fill="rgba(255,255,255,0.12)" stroke="rgba(255,255,255,0.2)" stroke-width="1"/>
+  <text x="210" y="526" font-family="'Inter', system-ui, sans-serif" font-size="16" font-weight="600" fill="#ffffff" text-anchor="middle">⚡ Instant Confirmation</text>
+  
+  <rect x="340" y="495" width="220" height="48" rx="24" fill="rgba(255,255,255,0.12)" stroke="rgba(255,255,255,0.2)" stroke-width="1"/>
+  <text x="450" y="526" font-family="'Inter', system-ui, sans-serif" font-size="16" font-weight="600" fill="#ffffff" text-anchor="middle">🌊 Oceanfront Suites</text>
+
+  <rect x="580" y="495" width="220" height="48" rx="24" fill="rgba(255,255,255,0.12)" stroke="rgba(255,255,255,0.2)" stroke-width="1"/>
+  <text x="690" y="526" font-family="'Inter', system-ui, sans-serif" font-size="16" font-weight="600" fill="#ffffff" text-anchor="middle">🔒 Verified PostgreSQL</text>
+</svg>
