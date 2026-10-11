@@ -9,6 +9,12 @@ A full-stack, multi-tenant Hotel Management System engineered with Node.js, Expr
 ### Guest Portal & Home
 ![Grand Horizon Portal Home](screenshots/home.png)
 
+### Active Checked-In Stay & In-Stay Room Service
+![Active Checked-In Stay Portal](screenshots/guest.png)
+
+### In-Stay Dining & Hotel Services Ordering Modal
+![Order Dining & Services Modal](screenshots/order.png)
+
 ### Real-Time Rooms & Suites Explorer
 ![Rooms and Suites Availability Explorer](screenshots/rooms.png)
 
@@ -87,6 +93,14 @@ stateDiagram-v2
     HousekeepingTurnover --> RoomCleaned: Staff cleans and marks room 'ready'
     RoomCleaned --> [*]
 ```
+
+### Key Hospitality & In-Stay Order Innovations
+
+* **Reception Staff Confirmation**: New reservations enter as confirmed but display a clear `⏳ Confirmation required by hotel staff` notice. In-stay room service ordering remains protected until hotel reception verifies guest credentials and completes `Staff Confirm & Check in`.
+* **Active Checked-In Stays Showcase**: Once checked in, the guest portal presents a dedicated hero section featuring current in-house rooms, live stay totals, and direct 1-click **Order Food & Services** access.
+* **Separation of Culinary vs. Hotel Services**: Dietary profile matching (`[★ Matches Dietary: Veg]`) strictly evaluates food and beverage items. Hotel services (e.g., Housekeeping, Spa, Luggage) are completely isolated from dietary filters.
+* **One-Time Free & Complimentary Services**: Hotel staff can configure services in the catalog editor with a **One-Time Free** tariff option (`₹0.00`). These items display a `[★ One-Time Free / Complimentary]` badge and allow guests to order complimentary amenities without adding charges to their final invoice.
+* **Personalization & Ambient Themes**: Integrated guest settings supporting live theme switching (Emerald Light, Obsidian Dark, Azure Ocean), multi-currency display (INR, USD, EUR, GBP), multi-language localization (EN, HI, ES, FR), and personalized chef recommendations.
 
 ---
 
@@ -247,6 +261,8 @@ t1/
 │       └── store.js     # SessionStorage token & user state manager
 ├── screenshots/
 │   ├── home.png         # Screenshot of the portal homepage
+│   ├── guest.png        # Screenshot of active checked-in stay guest portal
+│   ├── order.png        # Screenshot of dining & service ordering modal
 │   └── rooms.png        # Screenshot of rooms & suites explorer
 ├── ARCHITECTURE.md      # Architecture documentation
 ├── DESIGN.md            # Visual specification & design tokens

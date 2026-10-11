@@ -910,7 +910,11 @@ async function inventory() {
 async function catalog() {
   cache.catalog = await api('/catalog');
   return adminTabs('catalog') + '<div class="row between"><h1>Food &amp; Service Catalog</h1>' + button('Add item', 'add-item') + '</div><p class="muted">Only active items can be ordered by guests. Price edits do not alter past orders.</p>' +
-    table(['Item', 'Category', 'Unit price', 'Availability', 'Manage'], cache.catalog.map(i => '<tr><td>' + escape(i.name) + '</td><td>' + escape(i.category) + '</td><td>' + money(i.unit_price) + '</td><td>' + status(i.active ? 'available' : 'unavailable') + '</td><td>' + button('Edit', 'edit-item', i.id) + '</td></tr>'));
+    table(['Item', 'Category', 'Unit price', 'Availability', 'Manage'], cache.catalog.map(i => {
+      const isFree = Number(i.unit_price) === 0 || i.name.toLowerCase().includes('free');
+      const priceDisplay = isFree ? '<span class="badge" style="background:var(--success-bg);color:var(--success);font-weight:600">One-Time Free (₹0)</span>' : money(i.unit_price);
+      return '<tr><td>' + escape(i.name) + '</td><td>' + escape(i.category) + '</td><td>' + priceDisplay + '</td><td>' + status(i.active ? 'available' : 'unavailable') + '</td><td>' + button('Edit', 'edit-item', i.id) + '</td></tr>';
+    }));
 }
 
 async function queue() {
@@ -1157,22 +1161,55 @@ function roomEditor(roomId) {
 }
 
 function itemEditor(itemId) {
-  const i = cache.catalog?.find(i => i.id === itemId) || {active: true};
+  const i = cache.catalog?.find(i => i.id === itemId) || {active: true, category: 'service'};
+  const isCurrentlyFree = Number(i.unit_price) === 0 || (i.name && (i.name.toLowerCase().includes('free') || i.name.toLowerCase().includes('complimentary')));
+
   modal(i.id ? 'Edit catalog item' : 'Add food or service',
-    '<form class="stack">' +
+    '<form id="catalog-item-form" class="stack">' +
     field('Item name', 'name', 'text', i.name || '', 'required maxlength="120"') +
-    select('Category', 'category', [['food', 'Food & Dining'], ['service', 'Hotel Service']], i.category) +
-    field('Unit price (INR)', 'unit_price', 'number', i.unit_price || '', 'required min="0" step=".01"') +
+    select('Category', 'category', [['service', 'Hotel Service'], ['food', 'Food & Dining']], i.category || 'service') +
+    select('Tariff / Pricing Option', 'pricing_option', [
+      ['standard', 'Standard Billable Rate (Enter price below)'],
+      ['one_time_free', 'One-Time Free / Complimentary (₹0.00 · First request free for guests)']
+    ], isCurrentlyFree ? 'one_time_free' : 'standard') +
+    field('Unit price (INR)', 'unit_price', 'number', i.unit_price ?? (isCurrentlyFree ? '0.00' : ''), 'required min="0" step=".01"') +
     select('Availability', 'active', [['true', 'Available'], ['false', 'Unavailable']], String(i.active)) +
+    '<p class="muted" style="font-size:12px">Selecting <strong>One-Time Free</strong> sets the guest order price to ₹0.00 as a complimentary hotel perk.</p>' +
     formEnd('Save item'),
     async d => {
       d.active = d.active === 'true';
+      if (d.pricing_option === 'one_time_free') {
+        d.unit_price = '0.00';
+        if (d.category === 'service' && !d.name.toLowerCase().includes('free') && !d.name.toLowerCase().includes('complimentary')) {
+          d.name = d.name.trim() + ' (One-Time Free)';
+        }
+      }
+      delete d.pricing_option;
       await api('/catalog' + (i.id ? '/' + i.id : ''), {method: i.id ? 'PUT' : 'POST', body: d});
       dialog.close();
       await render();
       notify('Catalog updated successfully.');
     }
   );
+
+  const form = document.getElementById('catalog-item-form');
+  if (form) {
+    const optSel = form.elements.pricing_option;
+    const priceInput = form.elements.unit_price;
+    const catSel = form.elements.category;
+    const updatePricing = () => {
+      if (optSel.value === 'one_time_free') {
+        priceInput.value = '0.00';
+      }
+    };
+    optSel?.addEventListener('change', updatePricing);
+    catSel?.addEventListener('change', () => {
+      if (catSel.value === 'food' && optSel.value === 'one_time_free') {
+        optSel.value = 'standard';
+      }
+      updatePricing();
+    });
+  }
 }
 
 async function orderForm(bookingId) {
@@ -1183,17 +1220,39 @@ async function orderForm(bookingId) {
   }
   const key = crypto.randomUUID();
   const pref = getFoodPref();
-  const defaultNote = 'Dietary preference: ' + pref.dietary.toUpperCase().replaceAll('_', ' ') + ' · Spice: ' + pref.spice.toUpperCase();
-  modal('Order dining or hotel service',
-    '<form class="stack">' +
-    select('Item', 'catalog_id', items.map(i => {
+
+  const formatOption = i => {
+    const isFood = i.category === 'food';
+    const isFree = Number(i.unit_price) === 0 || i.name.toLowerCase().includes('free') || i.name.toLowerCase().includes('complimentary');
+    let badge = '';
+
+    if (isFood) {
       const isVegItem = !i.name.toLowerCase().includes('chicken') && !i.name.toLowerCase().includes('fish') && !i.name.toLowerCase().includes('prawn') && !i.name.toLowerCase().includes('meat');
-      const matchBadge = (pref.dietary === 'vegetarian' && isVegItem) ? ' [★ Matches Dietary: Veg]' : '';
-      return [i.id, i.category + ' · ' + i.name + matchBadge + ' · ' + money(i.unit_price)];
-    })) +
+      if (pref.dietary === 'vegetarian' && isVegItem) badge = ' [★ Matches Dietary: Veg]';
+    } else {
+      // Hotel Service: never label as veg
+      if (isFree) {
+        badge = ' [★ One-Time Free / Complimentary]';
+      } else {
+        badge = ' [Hotel Service]';
+      }
+    }
+    const priceDisplay = isFree ? 'Free (₹0)' : money(i.unit_price);
+    return [i.id, (isFood ? 'Dining: ' : 'Service: ') + i.name + badge + ' · ' + priceDisplay];
+  };
+
+  const firstItem = items[0];
+  const initialIsFood = firstItem?.category === 'food';
+  const initialNote = initialIsFood ?
+    ('Dietary preference: ' + pref.dietary.toUpperCase().replaceAll('_', ' ') + ' · Spice: ' + pref.spice.toUpperCase()) :
+    'Room instructions or preferred service time';
+
+  modal('Order dining or hotel service',
+    '<form id="guest-order-form" class="stack">' +
+    select('Item', 'catalog_id', items.map(formatOption)) +
     field('Quantity', 'quantity', 'number', 1, 'required min="1" max="20"') +
-    '<label>Notes for hotel staff<textarea name="customer_note" maxlength="1000" placeholder="Preferences, dietary requirements, or room delivery notes">' + escape(defaultNote) + '</textarea></label>' +
-    '<p class="muted">Staff will review your request. Completed orders are added directly to your checkout bill.</p>' +
+    '<label>Notes for hotel staff<textarea name="customer_note" maxlength="1000" placeholder="Preferences, special requests, or room delivery notes">' + escape(initialNote) + '</textarea></label>' +
+    '<p class="muted">Staff will review your request. Completed orders are added directly to your checkout bill (Complimentary / One-Time Free items are ₹0.00).</p>' +
     formEnd('Place order'),
     async d => {
       await api('/requests', {method: 'POST', body: {...d, booking_id: bookingId, submission_key: key}});
@@ -1202,6 +1261,25 @@ async function orderForm(bookingId) {
       notify('Order submitted to hotel staff.');
     }
   );
+
+  const form = document.getElementById('guest-order-form');
+  if (form) {
+    const itemSel = form.elements.catalog_id;
+    const noteArea = form.elements.customer_note;
+    itemSel?.addEventListener('change', () => {
+      const curItem = items.find(it => String(it.id) === String(itemSel.value));
+      if (!curItem) return;
+      if (curItem.category === 'food') {
+        if (!noteArea.value || noteArea.value.includes('Room instructions')) {
+          noteArea.value = 'Dietary preference: ' + pref.dietary.toUpperCase().replaceAll('_', ' ') + ' · Spice: ' + pref.spice.toUpperCase();
+        }
+      } else {
+        if (noteArea.value.startsWith('Dietary preference:')) {
+          noteArea.value = 'Room instructions or preferred service time';
+        }
+      }
+    });
+  }
 }
 
 function reviewOrder(orderId) {
