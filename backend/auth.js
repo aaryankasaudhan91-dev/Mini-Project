@@ -27,7 +27,8 @@ export async function requireAuth(req,res,next) {
  let token;
  try { token=jwt.verify((req.headers.authorization||'').replace(/^Bearer /,''),secret,{algorithms:['HS256']}); }
  catch { return res.status(401).json({error:'Please sign in again.'}); }
- if(!Number.isInteger(token.id)||typeof token.sid!=='string') return res.status(401).json({error:'Invalid session.'});
+const UUID_REGEX=/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+if(!Number.isInteger(token.id)||typeof token.sid!=='string'||!UUID_REGEX.test(token.sid)) return res.status(401).json({error:'Invalid session.'});
  try {
   const {rows}=await pool.query('SELECT u.* FROM auth_sessions s JOIN users u ON u.id=s.user_id WHERE s.id=$1 AND u.id=$2 AND s.expires_at>now()',[token.sid,token.id]);
   if(!rows[0]) return res.status(401).json({error:'Session expired or revoked.'});

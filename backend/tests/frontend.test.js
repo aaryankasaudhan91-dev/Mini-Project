@@ -16,4 +16,11 @@ test('session store discards legacy persistent tokens and uses tab storage',()=>
  });
  assert.equal(data.size,0);assert.deepEqual(removed,['hms_token','hms_session']);
 });
+test('app.js parses cleanly as valid JavaScript module without syntax errors',async()=>{
+ const {spawnSync}=await import('node:child_process');
+ const {fileURLToPath}=await import('node:url');
+ const file=fileURLToPath(new URL('../../frontend/js/app.js',import.meta.url));
+ const res=spawnSync(process.execPath,['--check',file]);
+ assert.equal(res.status,0,res.stderr?.toString());
+});
 

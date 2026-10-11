@@ -20,4 +20,15 @@ test('passwords use salted async hashes and no plaintext fallback',async()=>{
  assert.equal(await verifyPassword('wrong',a),false);assert.equal(await verifyPassword('plain','plain'),false);
  assert.equal(await verifyPassword('a','malformed:hash'),false);
 });
+test('requireAuth rejects malformed and non-UUID session tokens',async()=>{
+ const {requireAuth}=await import('../auth.js');
+ const jwt=(await import('jsonwebtoken')).default;
+ const res={status(code){this.statusCode=code;return this;},json(data){this.body=data;return this;}};
+ await requireAuth({headers:{authorization:''}},res,()=>{});
+ assert.equal(res.statusCode,401);
+ const badToken=jwt.sign({id:1,sid:'not-a-uuid'},process.env.JWT_SECRET,{expiresIn:'1h',algorithm:'HS256'});
+ await requireAuth({headers:{authorization:'Bearer '+badToken}},res,()=>{});
+ assert.equal(res.statusCode,401);
+ assert.equal(res.body.error,'Invalid session.');
+});
 
