@@ -662,22 +662,30 @@ async function guestPage() {
       '<p class="muted">Ordering food, dining, and hotel services is exclusively enabled for confirmed stays once check-in is completed by hotel staff.</p>' +
       (checkedInStays.length ?
         '<div class="grid" style="grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:16px;margin-top:16px">' +
-        checkedInStays.map(b =>
-          '<article class="card active-room-card" style="border-left:4px solid var(--primary);padding:18px;background:var(--surface)">' +
-            '<div class="row between" style="margin-bottom:8px">' +
+        checkedInStays.map(b => {
+          const completedOrders = requests.filter(q => q.booking_id === b.id && q.status === 'completed');
+          const ordersTotal = completedOrders.reduce((sum, q) => sum + Number(q.total_amount || 0), 0);
+          const currentGrand = Number(b.grand_total || (Number(b.total_amount) + ordersTotal));
+          const hasOrders = ordersTotal > 0;
+
+          return '<article class="card active-room-card" style="border-left:4px solid var(--primary);padding:18px;background:var(--surface)">' +
+            '<div class="row between" style="margin-bottom:8px;align-items:flex-start">' +
               '<span class="badge" style="background:var(--success-bg);color:var(--success);border:1px solid var(--success);font-weight:600">' +
                 '<span class="material-symbols-outlined" style="font-size:13px;vertical-align:middle;margin-right:2px">verified</span> Confirmed &amp; Checked In' +
               '</span>' +
-              '<strong class="price">' + money(b.total_amount) + '</strong>' +
+              '<div style="text-align:right">' +
+                '<strong class="price" style="font-size:22px;display:block">' + money(currentGrand) + '</strong>' +
+                (hasOrders ? '<small class="muted" style="font-size:11px">Room: ' + money(b.total_amount) + ' + Services: ' + money(ordersTotal) + '</small>' : '<small class="muted" style="font-size:11px">Room stay tariff</small>') +
+              '</div>' +
             '</div>' +
             '<h3 style="margin:6px 0 2px;font-size:18px">Room ' + escape(b.room_number) + ' · ' + escape(b.hotel_name) + '</h3>' +
             '<p class="muted" style="font-size:13px;margin-bottom:14px">Booking #' + b.id + ' · ' + escape(b.check_in) + ' → ' + escape(b.check_out) + ' (' + b.guest_count + ' guest' + (b.guest_count > 1 ? 's' : '') + ')</p>' +
             '<div class="row" style="gap:8px;flex-wrap:wrap">' +
               button('Order food & services', 'order', b.id, 'class="primary" style="flex:1"') +
-              button('View bill', 'bill', b.id, 'class="secondary"') +
+              button(hasOrders ? 'View bill (' + money(currentGrand) + ')' : 'View bill', 'bill', b.id, 'class="secondary"') +
             '</div>' +
-          '</article>'
-        ).join('') +
+          '</article>';
+        }).join('') +
         '</div>' :
         (pendingStays.length ?
           '<div style="background:var(--surface-alt);border-radius:var(--radius-md);padding:22px;text-align:center;margin-top:12px">' +
@@ -715,7 +723,16 @@ async function guestPage() {
     '<section class="panel">' +
       '<h2>All Reservations &amp; Stay History</h2>' +
       '<p class="muted">View your upcoming, active, and completed stays at Grand Horizon.</p>' +
-      table(['Stay', 'Dates', 'Status', 'Room total', 'Actions'], bookings.map(b => '<tr><td>' + escape(b.hotel_name) + '<small>Booking #' + b.id + ' · Room ' + escape(b.room_number) + ' · ' + b.guest_count + ' guests</small></td><td>' + escape(b.check_in) + ' → ' + escape(b.check_out) + '</td><td>' + bookingStatus(b.status) + '</td><td>' + money(b.total_amount) + '</td><td>' + button('View bill', 'bill', b.id) + (b.status === 'checked_in' ? button('Order food / service', 'order', b.id, 'class="primary"') : '') + (b.status === 'confirmed' ? button('Cancel booking', 'cancel-booking', b.id, 'class="danger"') : '') + '</td></tr>')) +
+      table(['Stay', 'Dates', 'Status', 'Bill total', 'Actions'], bookings.map(b => {
+        const completed = requests.filter(q => q.booking_id === b.id && q.status === 'completed');
+        const sOrders = completed.reduce((sum, q) => sum + Number(q.total_amount || 0), 0);
+        const sGrand = Number(b.grand_total || (Number(b.total_amount) + sOrders));
+        const amountDisplay = sOrders > 0 ?
+          '<strong>' + money(sGrand) + '</strong><br><small class="muted">Room ' + money(b.total_amount) + ' + ' + money(sOrders) + ' services</small>' :
+          '<strong>' + money(b.total_amount) + '</strong>';
+
+        return '<tr><td>' + escape(b.hotel_name) + '<small>Booking #' + b.id + ' · Room ' + escape(b.room_number) + ' · ' + b.guest_count + ' guests</small></td><td>' + escape(b.check_in) + ' → ' + escape(b.check_out) + '</td><td>' + bookingStatus(b.status) + '</td><td>' + amountDisplay + '</td><td>' + button('View bill', 'bill', b.id) + (b.status === 'checked_in' ? button('Order food / service', 'order', b.id, 'class="primary"') : '') + (b.status === 'confirmed' ? button('Cancel booking', 'cancel-booking', b.id, 'class="danger"') : '') + '</td></tr>';
+      })) +
     '</section>';
 }
 
@@ -893,7 +910,14 @@ async function dashboard() {
 }
 
 function bookingTable(rows) {
-  return table(['Guest / Room', 'Dates', 'Status', 'Room amount', 'Actions'], rows.map(b => '<tr><td>' + escape(b.customer_name) + '<small>#' + b.id + ' · Room ' + escape(b.room_number) + ' · ' + b.guest_count + ' guests</small></td><td>' + escape(b.check_in) + '<br>' + escape(b.check_out) + '</td><td>' + bookingStatus(b.status) + '</td><td>' + money(b.total_amount) + '</td><td>' + button('Bill / checkout', 'bill', b.id) + (b.status === 'confirmed' ? button('Staff Confirm & Check in', 'check-in', b.id, 'class="primary"') + button('Cancel', 'cancel-booking', b.id, 'class="danger"') : '') + '</td></tr>'));
+  return table(['Guest / Room', 'Dates', 'Status', 'Bill total', 'Actions'], rows.map(b => {
+    const grand = Number(b.grand_total || b.total_amount);
+    const hasServices = Number(b.orders_total) > 0;
+    const amountHtml = hasServices ?
+      '<strong>' + money(grand) + '</strong><br><small class="muted">+ ' + money(b.orders_total) + ' services</small>' :
+      '<strong>' + money(b.total_amount) + '</strong>';
+    return '<tr><td>' + escape(b.customer_name) + '<small>#' + b.id + ' · Room ' + escape(b.room_number) + ' · ' + b.guest_count + ' guests</small></td><td>' + escape(b.check_in) + '<br>' + escape(b.check_out) + '</td><td>' + bookingStatus(b.status) + '</td><td>' + amountHtml + '</td><td>' + button('Bill / checkout', 'bill', b.id) + (b.status === 'confirmed' ? button('Staff Confirm & Check in', 'check-in', b.id, 'class="primary"') + button('Cancel', 'cancel-booking', b.id, 'class="danger"') : '') + '</td></tr>';
+  }));
 }
 
 async function reservations() {
